@@ -151,9 +151,9 @@ export function StepEvent({ categoryId, selectedEventId, onSelect }: StepEventPr
                   {event.name}
                 </h3>
                 {event.duration && (
-                  <span className="mt-1 inline-flex items-center gap-1 text-xs text-muted">
+                  <span className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full bg-primary-50 border border-primary-100 px-3 py-1 text-sm font-semibold text-primary-700">
                     <svg
-                      className="h-3.5 w-3.5"
+                      className="h-4 w-4"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -169,7 +169,7 @@ export function StepEvent({ categoryId, selectedEventId, onSelect }: StepEventPr
                     {formatDuration(event.duration)}
                   </span>
                 )}
-                <p className="mt-2 text-sm leading-relaxed text-muted">
+                <p className="mt-3 text-sm leading-relaxed text-muted">
                   {event.description}
                 </p>
                 <div className="mt-4">

@@ -77,11 +77,12 @@ export function StepReview({
               <dt className="text-sm text-muted">Service</dt>
               <dd className="text-right text-sm font-medium text-foreground">
                 <div>{event?.name ?? "Unknown"}</div>
-                {event?.duration && (
-                  <span className="text-xs text-muted">
-                    {formatDuration(event.duration)}
-                  </span>
-                )}
+              </dd>
+            </div>
+            <div className="flex justify-between py-3">
+              <dt className="text-sm text-muted">Duration</dt>
+              <dd className="text-sm font-semibold text-primary-700">
+                {event?.duration ? formatDuration(event.duration) : "—"}
               </dd>
             </div>
             <div className="flex justify-between py-3">
