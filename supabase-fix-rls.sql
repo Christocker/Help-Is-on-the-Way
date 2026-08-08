@@ -18,7 +18,7 @@ AS $$
   );
 $$;
 
-CREATE OR REPLACE FUNCTION current_role()
+CREATE OR REPLACE FUNCTION get_my_role()
 RETURNS public.user_role
 LANGUAGE sql
 STABLE
@@ -65,7 +65,7 @@ CREATE POLICY "Users can update their own profile"
   USING (auth.uid() = id)
   WITH CHECK (
     auth.uid() = id
-    AND role = current_role()
+    AND role = get_my_role()
   );
 
 CREATE POLICY "Users can insert their own profile"
