@@ -22,11 +22,12 @@ export function LoginForm({ action }: LoginFormProps) {
       <Input
         id="email"
         name="email"
-        type="email"
-        label="Email address"
+        type="text"
+        label="Email or Username"
         placeholder="you@example.com"
         required
-        autoComplete="email"
+        autoComplete="username"
+        hint="Admins can sign in with username &quot;admin&quot;."
       />
 
       <div className="w-full">
