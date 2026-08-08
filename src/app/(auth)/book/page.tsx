@@ -45,10 +45,10 @@ export default function BookPage() {
 
   const handleSelectCategory = useCallback(
     (categoryId: string) => {
-      setBooking((prev) => ({
+      setBooking({
         ...INITIAL_STATE,
         category_id: categoryId,
-      }));
+      });
     },
     []
   );

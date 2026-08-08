@@ -1,4 +1,4 @@
-import { Card } from "@/components/ui/Card";
+import { AuthShell } from "@/components/layout/AuthShell";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { resetPassword } from "@/app/auth/actions";
@@ -14,83 +14,72 @@ export default async function ForgotPasswordPage({
   const { error, success } = await searchParams;
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md fade-in" padding="lg">
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mb-4">
-            <svg
-              className="w-7 h-7 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">
-            Forgot Password
-          </h1>
-          <p className="text-sm text-muted mt-1">
-            We&apos;ll send a reset link to your email
-          </p>
+    <AuthShell
+      title="Forgot Password"
+      subtitle="We'll send a reset link to your email"
+      icon={
+        <svg className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+        </svg>
+      }
+      footer={
+        <p className="text-center text-sm text-muted">
+          Remembered your password?{" "}
+          <Link
+            href="/login"
+            className="font-medium text-primary hover:text-primary-dark transition-colors"
+          >
+            Back to Sign In
+          </Link>
+        </p>
+      }
+    >
+      {error && (
+        <div
+          className="mb-6 rounded-lg bg-destructive-light border border-red-200 px-4 py-3 text-sm text-destructive"
+          role="alert"
+        >
+          {error}
         </div>
+      )}
 
-        {error && (
-          <div className="mb-6 rounded-lg bg-destructive-light border border-red-200 px-4 py-3 text-sm text-destructive">
-            {error}
-          </div>
-        )}
-
-        {success ? (
-          <div className="space-y-6">
-            <div className="rounded-lg bg-primary-50 border border-primary-100 px-4 py-4 text-sm text-primary-800 text-center">
-              <p>{success}</p>
+      {success ? (
+        <div className="space-y-6">
+          <div className="flex flex-col items-center gap-4 rounded-xl bg-primary-50 border border-primary-100 px-4 py-6 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-white">
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+              </svg>
             </div>
-            <Link href="/login" className="block">
-              <Button type="button" variant="outline" size="lg" className="w-full">
-                Back to Sign In
-              </Button>
-            </Link>
+            <p className="text-sm text-primary-800">{success}</p>
           </div>
-        ) : (
-          <>
-            <form action={resetPassword} className="space-y-5">
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                label="Email address"
-                placeholder="you@example.com"
-                required
-                autoComplete="email"
-              />
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full"
-              >
-                Send Reset Link
-              </Button>
-            </form>
-
-            <p className="mt-6 text-center text-sm text-muted">
-              <Link
-                href="/login"
-                className="font-medium text-primary hover:text-primary-dark transition-colors"
-              >
-                Back to Sign In
-              </Link>
-            </p>
-          </>
-        )}
-      </Card>
-    </main>
+          <Link href="/login" className="block">
+            <Button type="button" variant="outline" size="lg" className="w-full">
+              Back to Sign In
+            </Button>
+          </Link>
+        </div>
+      ) : (
+        <form action={resetPassword} className="space-y-5">
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            label="Email address"
+            placeholder="you@example.com"
+            required
+            autoComplete="email"
+          />
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            className="w-full"
+          >
+            Send Reset Link
+          </Button>
+        </form>
+      )}
+    </AuthShell>
   );
 }

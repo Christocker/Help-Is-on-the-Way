@@ -54,8 +54,6 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/notifications") ||
     isAdminRoute;
 
-  const isPublicRoute = !isProtectedRoute && !isAuthRoute;
-
   if (user && (isAuthRoute || request.nextUrl.pathname === "/")) {
     const { data: profile } = await supabase
       .from("profiles")

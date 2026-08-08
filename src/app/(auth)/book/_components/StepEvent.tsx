@@ -4,6 +4,7 @@ import { getEventsByCategory, getCategoryById } from "@/lib/data";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 import { useState } from "react";
 
 interface StepEventProps {
@@ -100,11 +101,13 @@ export function StepEvent({ categoryId, selectedEventId, onSelect }: StepEventPr
             >
               <div className="relative aspect-[16/10] w-full overflow-hidden bg-primary-50">
                 {event.image_url && !hasImageError ? (
-                  <img
+                  <Image
                     src={event.image_url}
                     alt=""
-                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
                     onError={() => handleImageError(event.id)}
+                    sizes="(min-width: 1024px) 50vw, (min-width: 640px) 50vw, 100vw"
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100">

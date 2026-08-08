@@ -1,13 +1,19 @@
-import Link from "next/link";
-import { SignUpForm } from "./SignUpForm";
-
-interface SignUpPageProps {
-  searchParams: Promise<{ error?: string; message?: string }>;
+interface AuthShellProps {
+  title: string;
+  subtitle?: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+  compact?: boolean;
 }
 
-export default async function SignUpPage({ searchParams }: SignUpPageProps) {
-  const { error } = await searchParams;
-
+export function AuthShell({
+  title,
+  subtitle,
+  icon,
+  children,
+  footer,
+}: AuthShellProps) {
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-navy via-primary-900 to-primary-700 px-4 py-10">
       <div className="absolute inset-0 bg-dots opacity-40" aria-hidden="true" />
@@ -24,37 +30,17 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
             </span>
             <span className="text-lg font-bold text-navy">Help Is on the Way</span>
           </div>
-          <h1 className="mt-4 text-2xl font-bold text-foreground">Create Account</h1>
-          <p className="mt-1 text-sm text-muted">
-            Join today and get free access to professional mental health care
-          </p>
+          <div className="mt-4 flex items-center gap-2">
+            {icon}
+            <h1 className="text-left text-2xl font-bold text-foreground">{title}</h1>
+          </div>
+          {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
         </div>
 
-        {error && (
-          <div
-            className="mb-6 rounded-lg bg-destructive-light border border-red-200 px-4 py-3 text-sm text-destructive"
-            role="alert"
-          >
-            {error}
-          </div>
+        {children}
+        {footer && (
+          <div className="mt-6 border-t border-border pt-5">{footer}</div>
         )}
-
-        <SignUpForm />
-
-        <p className="mt-6 text-center text-sm text-muted">
-          Already have an account?{" "}
-          <Link
-            href="/login"
-            className="font-medium text-primary hover:text-primary-dark transition-colors"
-          >
-            Sign In
-          </Link>
-        </p>
-
-        <p className="mt-4 text-center text-xs leading-relaxed text-muted-light">
-          By creating an account you agree to receive a verification code by
-          email. Your information is kept confidential and secure.
-        </p>
       </div>
     </main>
   );

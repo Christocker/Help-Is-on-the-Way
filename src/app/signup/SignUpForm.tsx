@@ -2,11 +2,10 @@
 
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { useState, FormEvent } from "react";
-
-interface SignUpFormProps {
-  action: (formData: FormData) => void;
-}
+import { OtpInput } from "@/components/ui/OtpInput";
+import { useEffect, useState, FormEvent, useTransition, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { signUp, verifyEmailCode, resendVerificationCode } from "@/app/auth/actions";
 
 interface FieldErrors {
   full_name?: string;
@@ -15,16 +14,31 @@ interface FieldErrors {
   confirmPassword?: string;
 }
 
-export function SignUpForm({ action }: SignUpFormProps) {
+export function SignUpForm() {
+  const router = useRouter();
+  const [step, setStep] = useState<"form" | "verify">("form");
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [formError, setFormError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [resendCountdown, setResendCountdown] = useState(60);
+  const [resending, setResending] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (step !== "verify" || resendCountdown <= 0) return;
+    const timer = setTimeout(() => setResendCountdown(resendCountdown - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [step, resendCountdown]);
 
   function validate(form: HTMLFormElement): boolean {
     const newErrors: FieldErrors = {};
     const fullName = (form.full_name as HTMLInputElement).value.trim();
-    const email = (form.email as HTMLInputElement).value.trim();
+    const emailValue = (form.email as HTMLInputElement).value.trim();
     const password = (form.password as HTMLInputElement).value;
     const confirmPassword = (form.confirmPassword as HTMLInputElement).value;
 
@@ -33,9 +47,9 @@ export function SignUpForm({ action }: SignUpFormProps) {
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email) {
+    if (!emailValue) {
       newErrors.email = "Email is required.";
-    } else if (!emailRegex.test(email)) {
+    } else if (!emailRegex.test(emailValue)) {
       newErrors.email = "Please enter a valid email address.";
     }
 
@@ -56,15 +70,135 @@ export function SignUpForm({ action }: SignUpFormProps) {
   }
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    if (!validate(e.currentTarget)) {
-      e.preventDefault();
+    e.preventDefault();
+    setFormError(null);
+    if (!validate(e.currentTarget)) return;
+    setIsLoading(true);
+
+    startTransition(async () => {
+      const result = await signUp(new FormData(e.currentTarget));
+      setIsLoading(false);
+      if (result.ok && result.email) {
+        setEmail(result.email);
+        setResendCountdown(60);
+        setStep("verify");
+      } else {
+        setFormError(result.error ?? "Something went wrong. Please try again.");
+      }
+    });
+  }
+
+  async function handleVerify() {
+    if (otp.length !== 6) {
+      setFormError("Please enter the 6-digit code.");
       return;
     }
+    setFormError(null);
     setIsLoading(true);
+    const result = await verifyEmailCode(email, otp);
+    setIsLoading(false);
+    if (result.ok) {
+      router.push("/dashboard");
+      router.refresh();
+    } else {
+      setFormError(result.error ?? "Invalid code. Please try again.");
+      setOtp("");
+    }
+  }
+
+  async function handleResend() {
+    if (resendCountdown > 0 || resending) return;
+    setResending(true);
+    const result = await resendVerificationCode(email);
+    setResending(false);
+    if (result.ok) {
+      setResendCountdown(60);
+      setFormError(null);
+    } else {
+      setFormError(result.error ?? "Could not resend the code. Please try again.");
+    }
+  }
+
+  if (step === "verify") {
+    return (
+      <div className="space-y-6 fade-in">
+        <div className="text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 text-primary">
+            <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-foreground">Verify your email</h2>
+          <p className="mt-2 text-sm text-muted">
+            We sent a 6-digit verification code to{" "}
+            <span className="font-semibold text-foreground">{email}</span>. Enter
+            it below to activate your account.
+          </p>
+        </div>
+
+        {formError && (
+          <div
+            className="rounded-lg bg-destructive-light border border-red-200 px-4 py-3 text-sm text-destructive"
+            role="alert"
+          >
+            {formError}
+          </div>
+        )}
+
+        <OtpInput
+          value={otp}
+          onChange={setOtp}
+          disabled={isLoading}
+          hasError={Boolean(formError)}
+        />
+
+        <Button
+          type="button"
+          variant="primary"
+          size="lg"
+          className="w-full"
+          isLoading={isLoading}
+          disabled={otp.length !== 6}
+          onClick={handleVerify}
+        >
+          Verify Code
+        </Button>
+
+        <div className="text-center text-sm text-muted">
+          {resendCountdown > 0 ? (
+            <p>
+              Resend code in{" "}
+              <span className="font-semibold text-foreground">
+                {resendCountdown}s
+              </span>
+            </p>
+          ) : (
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resending}
+              className="font-semibold text-primary hover:text-primary-dark transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              {resending ? "Sending..." : "Resend code"}
+            </button>
+          )}
+        </div>
+
+        <div className="border-t border-border pt-4 text-center text-sm">
+          <button
+            type="button"
+            onClick={() => setStep("form")}
+            className="text-muted hover:text-foreground transition-colors cursor-pointer"
+          >
+            &larr; Back to registration
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <form action={action} onSubmit={handleSubmit} className="space-y-5">
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-5" noValidate>
       <Input
         id="full_name"
         name="full_name"
@@ -85,6 +219,7 @@ export function SignUpForm({ action }: SignUpFormProps) {
         required
         autoComplete="email"
         error={errors.email}
+        hint="We'll send a verification code to this address."
       />
 
       <Input
@@ -218,13 +353,22 @@ export function SignUpForm({ action }: SignUpFormProps) {
         )}
       </div>
 
+      {formError && (
+        <div
+          className="rounded-lg bg-destructive-light border border-red-200 px-4 py-3 text-sm text-destructive"
+          role="alert"
+        >
+          {formError}
+        </div>
+      )}
+
       <Button
         type="submit"
         variant="primary"
         size="lg"
         className="w-full"
-        isLoading={isLoading}
-        disabled={isLoading}
+        isLoading={isLoading || isPending}
+        disabled={isLoading || isPending}
       >
         Create Account
       </Button>

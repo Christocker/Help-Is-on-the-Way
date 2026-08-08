@@ -61,9 +61,21 @@ export default async function DashboardPage() {
           <h2 className="text-lg font-semibold text-foreground mb-4">
             Quick Actions
           </h2>
-          <Link href="/book">
-            <Button>Book a Session</Button>
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/book">
+              <Button>Book a Session</Button>
+            </Link>
+            <Link href="/notifications">
+              <Button variant="outline">
+                Notifications
+                {unreadCount != null && unreadCount > 0 && (
+                  <span className="ml-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-bold text-white">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
+          </div>
         </Card>
       </section>
 

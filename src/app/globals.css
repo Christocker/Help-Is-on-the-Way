@@ -2,7 +2,7 @@
 
 @theme inline {
   --color-background: #f8fafc;
-  --color-foreground: #1e293b;
+  --color-foreground: #0f172a;
   --color-primary: #1e40af;
   --color-primary-light: #3b82f6;
   --color-primary-dark: #1e3a8a;
@@ -11,8 +11,13 @@
   --color-primary-600: #2563eb;
   --color-primary-700: #1d4ed8;
   --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-navy: #1a2744;
+  --color-navy-light: #243358;
+  --color-navy-dark: #131d33;
   --color-accent: #059669;
   --color-accent-light: #10b981;
+  --color-accent-50: #ecfdf5;
   --color-muted: #64748b;
   --color-muted-light: #94a3b8;
   --color-border: #e2e8f0;
@@ -30,7 +35,7 @@ html {
 
 body {
   background: #f8fafc;
-  color: #1e293b;
+  color: #0f172a;
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -42,6 +47,11 @@ body {
   border-radius: 4px;
 }
 
+::selection {
+  background: #dbeafe;
+  color: #1e3a8a;
+}
+
 @utility container-page {
   max-width: 1280px;
   margin-left: auto;
@@ -51,14 +61,27 @@ body {
 }
 
 @utility card-elevation {
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+  box-shadow:
+    0 1px 3px 0 rgb(15 23 42 / 0.06),
+    0 1px 2px -1px rgb(15 23 42 / 0.06);
+}
+
+@utility card-elevation-lg {
+  box-shadow:
+    0 10px 25px -5px rgb(15 23 42 / 0.1),
+    0 8px 10px -6px rgb(15 23 42 / 0.06);
 }
 
 @utility card-hover {
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease,
+    border-color 0.25s ease;
   &:hover {
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-    transform: translateY(-2px);
+    box-shadow:
+      0 12px 24px -6px rgb(15 23 42 / 0.12),
+      0 4px 8px -4px rgb(15 23 42 / 0.06);
+    transform: translateY(-3px);
   }
 }
 
@@ -75,7 +98,7 @@ body {
 }
 
 @utility fade-in {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.35s ease-out;
 }
 
 @keyframes fadeIn {
@@ -99,4 +122,29 @@ body {
 @keyframes slideIn {
   from { transform: translateX(-100%); }
   to { transform: translateX(0); }
+}
+
+@utility animate-fade-up {
+  animation: fadeUp 0.6s ease-out both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@utility bg-dots {
+  background-image: radial-gradient(rgb(30 64 175 / 0.12) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+@utility bg-grid {
+  background-image:
+    linear-gradient(rgb(30 64 175 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(30 64 175 / 0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+@utility text-balance {
+  text-wrap: balance;
 }
