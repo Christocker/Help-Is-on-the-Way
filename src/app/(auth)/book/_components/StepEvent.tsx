@@ -169,7 +169,7 @@ export function StepEvent({ categoryId, selectedEventId, onSelect }: StepEventPr
                     {formatDuration(event.duration)}
                   </span>
                 )}
-                <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted">
+                <p className="mt-2 text-sm leading-relaxed text-muted">
                   {event.description}
                 </p>
                 <div className="mt-4">
