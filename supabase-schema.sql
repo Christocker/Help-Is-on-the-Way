@@ -136,6 +136,33 @@ CREATE TRIGGER update_appointments_updated_at
 -- ROW LEVEL SECURITY POLICIES
 -- ============================================
 
+-- Admin role helper (SECURITY DEFINER bypasses RLS to avoid infinite
+-- recursion when checking the caller's role inside a policy).
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM profiles
+    WHERE id = auth.uid() AND role = 'admin'
+  );
+$$;
+
+-- Caller's own role (SECURITY DEFINER, no recursion). Used to prevent
+-- privilege escalation on profile updates.
+CREATE OR REPLACE FUNCTION current_role()
+RETURNS public.user_role
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT role FROM profiles WHERE id = auth.uid()
+$$;
+
 -- Enable RLS on all tables
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
@@ -152,19 +179,15 @@ CREATE POLICY "Users can view their own profile"
 
 CREATE POLICY "Admins can view all profiles"
   ON profiles FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM profiles
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  USING (is_admin());
 
 CREATE POLICY "Users can update their own profile"
   ON profiles FOR UPDATE
   USING (auth.uid() = id)
-  WITH CHECK (auth.uid() = id AND role = (
-    SELECT role FROM profiles WHERE id = auth.uid()
-  ));
+  WITH CHECK (
+    auth.uid() = id
+    AND role = current_role()
+  );
 
 CREATE POLICY "Users can insert their own profile"
   ON profiles FOR INSERT
@@ -177,12 +200,7 @@ CREATE POLICY "Anyone can view active categories"
 
 CREATE POLICY "Admins can manage categories"
   ON categories FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM profiles
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  USING (is_admin());
 
 -- Events policies
 CREATE POLICY "Anyone can view active events"
@@ -191,12 +209,7 @@ CREATE POLICY "Anyone can view active events"
 
 CREATE POLICY "Admins can manage events"
   ON events FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM profiles
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  USING (is_admin());
 
 -- Availability policies
 CREATE POLICY "Anyone can view available slots"
@@ -205,12 +218,7 @@ CREATE POLICY "Anyone can view available slots"
 
 CREATE POLICY "Admins can manage availability"
   ON availability FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM profiles
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  USING (is_admin());
 
 -- Appointments policies
 CREATE POLICY "Clients can view their own appointments"
@@ -219,12 +227,7 @@ CREATE POLICY "Clients can view their own appointments"
 
 CREATE POLICY "Admins can view all appointments"
   ON appointments FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM profiles
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  USING (is_admin());
 
 CREATE POLICY "Clients can create their own appointments"
   ON appointments FOR INSERT
@@ -232,22 +235,7 @@ CREATE POLICY "Clients can create their own appointments"
 
 CREATE POLICY "Admins can update appointments"
   ON appointments FOR UPDATE
-  USING (
-    EXISTS (
-      SELECT 1 FROM profiles
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
-
-CREATE POLICY "Clients can update their own appointments (limited fields)"
-  ON appointments FOR UPDATE
-  USING (client_id = auth.uid())
-  WITH CHECK (
-    client_id = auth.uid()
-    AND status = (
-      SELECT status FROM appointments WHERE id = id
-    )
-  );
+  USING (is_admin());
 
 -- Instructions policies
 CREATE POLICY "Anyone can view active instructions"
@@ -256,12 +244,7 @@ CREATE POLICY "Anyone can view active instructions"
 
 CREATE POLICY "Admins can manage instructions"
   ON instructions FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM profiles
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  USING (is_admin());
 
 -- Notifications policies
 CREATE POLICY "Clients can view their own notifications"
@@ -270,12 +253,7 @@ CREATE POLICY "Clients can view their own notifications"
 
 CREATE POLICY "Admins can manage notifications"
   ON notifications FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM profiles
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  USING (is_admin());
 
 -- ============================================
 -- AUTO-CREATE PROFILE ON SIGNUP
