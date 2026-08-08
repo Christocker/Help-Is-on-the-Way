@@ -1,28 +1,28 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #f8fafc;
-  --color-foreground: #0f172a;
-  --color-primary: #1e40af;
-  --color-primary-light: #3b82f6;
-  --color-primary-dark: #1e3a8a;
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
-  --color-navy: #1a2744;
-  --color-navy-light: #243358;
-  --color-navy-dark: #131d33;
+  --color-background: #faf9fc;
+  --color-foreground: #1e1b2e;
+  --color-primary: #5b21b6;
+  --color-primary-light: #8b5cf6;
+  --color-primary-dark: #4c1d95;
+  --color-primary-50: #f5f3ff;
+  --color-primary-100: #ede9fe;
+  --color-primary-600: #7c3aed;
+  --color-primary-700: #6d28d9;
+  --color-primary-800: #5b21b6;
+  --color-primary-900: #4c1d95;
+  --color-navy: #2e1065;
+  --color-navy-light: #3b1d82;
+  --color-navy-dark: #1e0a45;
   --color-accent: #059669;
   --color-accent-light: #10b981;
   --color-accent-50: #ecfdf5;
-  --color-muted: #64748b;
-  --color-muted-light: #94a3b8;
-  --color-border: #e2e8f0;
+  --color-muted: #6b6479;
+  --color-muted-light: #9d97ad;
+  --color-border: #e5e1ee;
   --color-card: #ffffff;
-  --color-surface: #f1f5f9;
+  --color-surface: #f3f1f8;
   --color-destructive: #dc2626;
   --color-destructive-light: #fef2f2;
   --font-sans: var(--font-geist-sans);
@@ -34,22 +34,22 @@ html {
 }
 
 body {
-  background: #f8fafc;
-  color: #0f172a;
+  background: #faf9fc;
+  color: #1e1b2e;
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 *:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid #8b5cf6;
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 ::selection {
-  background: #dbeafe;
-  color: #1e3a8a;
+  background: #ede9fe;
+  color: #4c1d95;
 }
 
 @utility container-page {
@@ -134,14 +134,14 @@ body {
 }
 
 @utility bg-dots {
-  background-image: radial-gradient(rgb(30 64 175 / 0.12) 1px, transparent 1px);
+  background-image: radial-gradient(rgb(91 33 182 / 0.14) 1px, transparent 1px);
   background-size: 22px 22px;
 }
 
 @utility bg-grid {
   background-image:
-    linear-gradient(rgb(30 64 175 / 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(30 64 175 / 0.05) 1px, transparent 1px);
+    linear-gradient(rgb(91 33 182 / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(91 33 182 / 0.06) 1px, transparent 1px);
   background-size: 44px 44px;
 }
 

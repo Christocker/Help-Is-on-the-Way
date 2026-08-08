@@ -21,8 +21,8 @@ export function NavLink({ href, children, icon }: NavLinkProps) {
       className={cn(
         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
         isActive
-          ? "bg-blue-800 text-white"
-          : "text-blue-200 hover:bg-blue-800/50 hover:text-white"
+          ? "bg-primary-700 text-white"
+          : "text-primary-light hover:bg-white/10 hover:text-white"
       )}
     >
       {icon}

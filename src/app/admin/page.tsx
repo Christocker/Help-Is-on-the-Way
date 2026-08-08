@@ -73,8 +73,8 @@ export default async function AdminDashboardPage() {
           />
         </svg>
       ),
-      accent: "text-blue-600",
-      bg: "bg-blue-50",
+      accent: "text-primary-600",
+      bg: "bg-primary-50",
     },
     {
       label: "Pending",

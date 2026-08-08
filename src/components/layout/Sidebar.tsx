@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { signOut } from "@/app/auth/actions";
 import { SupportSection } from "@/components/layout/SupportSection";
+import { Logo } from "@/components/layout/Logo";
 
 interface SidebarProps {
   user: {
@@ -95,14 +96,12 @@ export function Sidebar({ user, unreadNotifications = 0 }: SidebarProps) {
   }, [mobileOpen]);
 
   const sidebarContent = (
-    <div className="flex h-full flex-col bg-[#1a2744] text-white">
+    <div className="flex h-full flex-col bg-navy text-white">
       <div className="flex items-center gap-3 border-b border-white/10 px-5 py-5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-          </svg>
-        </div>
-        <span className="text-base font-semibold leading-tight">Help Is on the Way</span>
+        <Logo
+          imgClassName="h-10 w-10"
+          subtitle="Client Portal"
+        />
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-4">
@@ -170,7 +169,7 @@ export function Sidebar({ user, unreadNotifications = 0 }: SidebarProps) {
       {/* Mobile hamburger */}
       <button
         type="button"
-        className="fixed top-3 left-3 z-40 flex h-10 w-10 items-center justify-center rounded-lg bg-[#1a2744] text-white shadow-lg lg:hidden cursor-pointer"
+        className="fixed top-3 left-3 z-40 flex h-10 w-10 items-center justify-center rounded-lg bg-navy text-white shadow-lg lg:hidden cursor-pointer"
         onClick={() => setMobileOpen(true)}
         aria-label="Open navigation menu"
       >

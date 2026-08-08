@@ -16,7 +16,7 @@ export function Badge({
     success: "bg-green-100 text-green-800 border-green-200",
     warning: "bg-orange-100 text-orange-800 border-orange-200",
     error: "bg-red-100 text-red-800 border-red-200",
-    info: "bg-blue-100 text-blue-800 border-blue-200",
+    info: "bg-violet-100 text-violet-800 border-violet-200",
   };
 
   const dots = {
@@ -24,7 +24,7 @@ export function Badge({
     success: "bg-green-500",
     warning: "bg-orange-500",
     error: "bg-red-500",
-    info: "bg-blue-500",
+    info: "bg-violet-500",
   };
 
   return (
