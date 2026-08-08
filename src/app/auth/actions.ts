@@ -4,9 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export type ActionResult = { ok: boolean; error?: string; email?: string };
-
-export async function signUp(formData: FormData): Promise<ActionResult> {
+export async function signUp(formData: FormData) {
   const supabase = await createClient();
 
   const email = formData.get("email") as string;
@@ -27,7 +25,7 @@ export async function signUp(formData: FormData): Promise<ActionResult> {
   });
 
   if (error) {
-    return { ok: false, error: error.message };
+    redirect(`/signup?error=${encodeURIComponent(error.message)}`);
   }
 
   if (data.user) {
@@ -40,55 +38,12 @@ export async function signUp(formData: FormData): Promise<ActionResult> {
     });
 
     if (profileError && profileError.code !== "23505") {
-      return { ok: false, error: profileError.message };
+      redirect(`/signup?error=${encodeURIComponent(profileError.message)}`);
     }
   }
 
-  const { error: otpError } = await supabase.auth.signInWithOtp({
-    email,
-    options: { shouldCreateUser: false },
-  });
-
-  if (otpError) {
-    return { ok: false, error: otpError.message };
-  }
-
-  return { ok: true, email };
-}
-
-export async function resendVerificationCode(email: string): Promise<ActionResult> {
-  const supabase = await createClient();
-
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: { shouldCreateUser: false },
-  });
-
-  if (error) {
-    return { ok: false, error: error.message };
-  }
-
-  return { ok: true };
-}
-
-export async function verifyEmailCode(
-  email: string,
-  token: string
-): Promise<ActionResult> {
-  const supabase = await createClient();
-
-  const { error } = await supabase.auth.verifyOtp({
-    email,
-    token,
-    type: "email",
-  });
-
-  if (error) {
-    return { ok: false, error: error.message };
-  }
-
   revalidatePath("/", "layout");
-  return { ok: true };
+  redirect("/signup?success=1");
 }
 
 export async function signIn(formData: FormData) {
