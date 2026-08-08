@@ -63,8 +63,8 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
         {success ? (
           <div className="space-y-4">
             <p className="rounded-lg bg-surface px-4 py-3 text-center text-xs text-muted">
-              If you don&apos;t see the email, check your spam or junk folder.
-              The confirmation link is valid for 5 hours.
+              If you don&apos;t see the email, check your spam or junk folder. You
+              can verify your email anytime — there&apos;s no deadline.
             </p>
             <div className="rounded-xl border border-border bg-white p-4">
               <ResendVerification email={email} />

@@ -76,6 +76,17 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Unverified users cannot book or use services. Redirect them to the
+  // verification page where they can resend their verification email.
+  if (user && !user.email_confirmed_at && isProtectedRoute && !isAdminRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/verify";
+    url.search = "";
+    url.searchParams.set("status", "pending");
+    if (user.email) url.searchParams.set("email", user.email);
+    return NextResponse.redirect(url);
+  }
+
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";

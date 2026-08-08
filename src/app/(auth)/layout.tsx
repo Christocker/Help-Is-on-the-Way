@@ -51,7 +51,7 @@ export default async function AuthLayout({
             <UnverifiedBanner
               email={user.email ?? ""}
               message="Your email address has not been verified."
-              detail="Please verify your email address within 24 hours to complete your account setup. Your account will remain pending — nothing will be deleted."
+              detail="Please verify your email to unlock booking and your other services. There's no deadline — your account will stay pending until you verify, and nothing will be deleted."
             />
           )}
           {children}

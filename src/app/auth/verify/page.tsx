@@ -123,9 +123,9 @@ function UnverifiedState({ email }: { email?: string }) {
         Your email address has not been verified
       </h1>
       <p className="mt-3 text-sm leading-relaxed text-muted">
-        Your account is still awaiting email verification. Please verify your
-        email address to continue. Your account will remain pending — nothing
-        will be deleted.
+        Please verify your email to unlock booking and your other services.
+        There&apos;s no deadline — you can verify anytime, and nothing will be
+        deleted while your account stays pending.
       </p>
       <div className="mt-8 border-t border-border pt-6 text-left">
         <ResendVerification email={email} />
