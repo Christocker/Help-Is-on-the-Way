@@ -38,7 +38,7 @@ export async function signUp(formData: FormData) {
     .join(" ");
 
   const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    process.env.NEXT_PUBLIC_SITE_URL || "https://help-is-on-the-way.vercel.app";
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -106,7 +106,9 @@ export async function resetPassword(formData: FormData) {
   const email = formData.get("email") as string;
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/update-password`,
+    redirectTo: `${
+      process.env.NEXT_PUBLIC_SITE_URL || "https://help-is-on-the-way.vercel.app"
+    }/update-password`,
   });
 
   if (error) {
