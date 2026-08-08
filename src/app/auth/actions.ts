@@ -12,7 +12,10 @@ export async function signUp(formData: FormData) {
   const full_name = formData.get("full_name") as string;
   const contact_number = formData.get("contact_number") as string;
 
-  const { data, error } = await supabase.auth.signUp({
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+  const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -21,25 +24,12 @@ export async function signUp(formData: FormData) {
         contact_number: contact_number || null,
         role: "client",
       },
+      emailRedirectTo: `${siteUrl}/auth/callback`,
     },
   });
 
   if (error) {
     redirect(`/signup?error=${encodeURIComponent(error.message)}`);
-  }
-
-  if (data.user) {
-    const { error: profileError } = await supabase.from("profiles").insert({
-      id: data.user.id,
-      full_name,
-      email,
-      contact_number: contact_number || null,
-      role: "client",
-    });
-
-    if (profileError && profileError.code !== "23505") {
-      redirect(`/signup?error=${encodeURIComponent(profileError.message)}`);
-    }
   }
 
   revalidatePath("/", "layout");
