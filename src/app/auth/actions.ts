@@ -83,7 +83,21 @@ export async function signIn(formData: FormData) {
     redirect(`/login?error=${encodeURIComponent(error.message)}`);
   }
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user?.id)
+    .single();
+
   revalidatePath("/", "layout");
+
+  if (profile?.role === "admin") {
+    redirect("/admin");
+  }
   redirect("/dashboard");
 }
 
