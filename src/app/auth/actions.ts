@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 export async function signUp(formData: FormData) {
   const supabase = await createClient();
@@ -36,63 +36,16 @@ export async function signUp(formData: FormData) {
   redirect("/signup?success=1");
 }
 
-const ADMIN_USERNAME = "admin";
-const ADMIN_EMAIL = "admin@helpisontheway.ph";
-
-async function provisionAdmin(password: string): Promise<boolean> {
-  try {
-    const service = await createServiceClient();
-    const { data: created, error } = await service.auth.admin.createUser({
-      email: ADMIN_EMAIL,
-      password,
-      email_confirm: true,
-      user_metadata: { full_name: "Administrator", role: "admin" },
-    });
-
-    if (error) {
-      console.error("Admin provision failed:", error.message);
-      return false;
-    }
-
-    if (created?.user?.id) {
-      await service
-        .from("profiles")
-        .update({ full_name: "Administrator", role: "admin" })
-        .eq("id", created.user.id);
-    }
-    return true;
-  } catch (err) {
-    console.error("Admin provision failed:", err);
-    return false;
-  }
-}
-
 export async function signIn(formData: FormData) {
   const supabase = await createClient();
 
-  let email = formData.get("email") as string;
+  const email = formData.get("email") as string;
   const password = formData.get("password") as string;
-  const trimmedEmail = email.trim().toLowerCase();
 
-  if (trimmedEmail === ADMIN_USERNAME) {
-    email = ADMIN_EMAIL;
-  }
-
-  let { error } = await supabase.auth.signInWithPassword({
+  const { error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
-
-  if (error && trimmedEmail === ADMIN_USERNAME) {
-    const provisioned = await provisionAdmin(password);
-    if (provisioned) {
-      const retry = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      error = retry.error ?? null;
-    }
-  }
 
   if (error) {
     redirect(`/login?error=${encodeURIComponent(error.message)}`);
