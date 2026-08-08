@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { signOut } from "@/app/auth/actions";
 import { SupportSection } from "@/components/layout/SupportSection";
 import { NavLink } from "./_components/NavLink";
@@ -136,6 +137,16 @@ export default async function AdminLayout({
 
         <div className="border-t border-white/10 p-3 space-y-3">
           <SupportSection />
+
+          <Link
+            href="/dashboard"
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-primary-light hover:bg-white/10 hover:text-white transition-colors"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 8.25V18a2.25 2.25 0 002.25 2.25h13.5A2.25 2.25 0 0021 18V8.25m-18 0V6A2.25 2.25 0 013.75 3h16.5A2.25 2.25 0 0121 6v2.25m-18 0h18M5.25 6h.008v.008H5.25V6zM7.5 6h.008v.008H7.5V6zM9.75 6h.008v.008H9.75V6z" />
+            </svg>
+            Switch to Client Portal
+          </Link>
 
           <div className="flex items-center gap-3 px-3 py-2">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-700 text-sm font-medium text-white">

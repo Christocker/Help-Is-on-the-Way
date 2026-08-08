@@ -23,7 +23,7 @@ export default async function AuthLayout({
   const [{ data: profile }, { count: unreadCount }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("full_name, email")
+      .select("full_name, email, role")
       .eq("id", user.id)
       .single(),
     supabase
@@ -35,6 +35,7 @@ export default async function AuthLayout({
 
   const displayName = profile?.full_name ?? user.email?.split("@")[0] ?? "User";
   const displayEmail = profile?.email ?? user.email ?? "";
+  const isAdmin = profile?.role === "admin";
 
   return (
     <div className="min-h-screen">
@@ -44,6 +45,7 @@ export default async function AuthLayout({
           email: displayEmail,
         }}
         unreadNotifications={unreadCount ?? 0}
+        isAdmin={isAdmin}
       />
       <main className="lg:pl-64">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
