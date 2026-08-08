@@ -283,11 +283,30 @@ CREATE POLICY "Admins can manage notifications"
 
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  full_name_value TEXT;
 BEGIN
+  full_name_value := COALESCE(
+    NULLIF(NEW.raw_user_meta_data->>'first_name', ''),
+    ''
+  ) || CASE
+    WHEN COALESCE(NEW.raw_user_meta_data->>'middle_name', '') <> '' THEN
+      ' ' || NEW.raw_user_meta_data->>'middle_name'
+    ELSE ''
+  END || CASE
+    WHEN COALESCE(NEW.raw_user_meta_data->>'last_name', '') <> '' THEN
+      ' ' || NEW.raw_user_meta_data->>'last_name'
+    ELSE ''
+  END;
+
+  IF NULLIF(full_name_value, '') IS NULL THEN
+    full_name_value := COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email);
+  END IF;
+
   INSERT INTO public.profiles (id, full_name, email, contact_number, role)
   VALUES (
     NEW.id,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
+    full_name_value,
     NEW.email,
     NULLIF(NEW.raw_user_meta_data->>'contact_number', ''),
     'client'

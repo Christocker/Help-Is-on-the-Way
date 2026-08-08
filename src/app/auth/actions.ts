@@ -9,8 +9,14 @@ export async function signUp(formData: FormData) {
 
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
-  const full_name = formData.get("full_name") as string;
+  const first_name = formData.get("first_name") as string;
+  const middle_name = formData.get("middle_name") as string;
+  const last_name = formData.get("last_name") as string;
   const contact_number = formData.get("contact_number") as string;
+
+  const full_name = [first_name.trim(), middle_name?.trim(), last_name.trim()]
+    .filter(Boolean)
+    .join(" ");
 
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -21,6 +27,9 @@ export async function signUp(formData: FormData) {
     options: {
       data: {
         full_name,
+        first_name: first_name.trim(),
+        middle_name: middle_name?.trim() || null,
+        last_name: last_name.trim(),
         contact_number: contact_number || null,
         role: "client",
       },

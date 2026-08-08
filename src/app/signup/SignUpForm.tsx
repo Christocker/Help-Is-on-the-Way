@@ -9,7 +9,8 @@ interface SignUpFormProps {
 }
 
 interface FieldErrors {
-  full_name?: string;
+  first_name?: string;
+  last_name?: string;
   email?: string;
   password?: string;
   confirmPassword?: string;
@@ -23,13 +24,18 @@ export function SignUpForm({ action }: SignUpFormProps) {
 
   function validate(form: HTMLFormElement): boolean {
     const newErrors: FieldErrors = {};
-    const fullName = (form.full_name as HTMLInputElement).value.trim();
+    const firstName = (form.first_name as HTMLInputElement).value.trim();
+    const lastName = (form.last_name as HTMLInputElement).value.trim();
     const email = (form.email as HTMLInputElement).value.trim();
     const password = (form.password as HTMLInputElement).value;
     const confirmPassword = (form.confirmPassword as HTMLInputElement).value;
 
-    if (!fullName) {
-      newErrors.full_name = "Full name is required.";
+    if (!firstName) {
+      newErrors.first_name = "First name is required.";
+    }
+
+    if (!lastName) {
+      newErrors.last_name = "Last name is required.";
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -65,15 +71,37 @@ export function SignUpForm({ action }: SignUpFormProps) {
 
   return (
     <form action={action} onSubmit={handleSubmit} className="space-y-5" noValidate>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Input
+          id="first_name"
+          name="first_name"
+          type="text"
+          label="First Name"
+          placeholder="Juan"
+          required
+          autoComplete="given-name"
+          error={errors.first_name}
+        />
+
+        <Input
+          id="middle_name"
+          name="middle_name"
+          type="text"
+          label="Middle Name"
+          placeholder="Dela Cruz (optional)"
+          autoComplete="additional-name"
+        />
+      </div>
+
       <Input
-        id="full_name"
-        name="full_name"
+        id="last_name"
+        name="last_name"
         type="text"
-        label="Full Name"
-        placeholder="Juan Dela Cruz"
+        label="Last Name"
+        placeholder="Santos"
         required
-        autoComplete="name"
-        error={errors.full_name}
+        autoComplete="family-name"
+        error={errors.last_name}
       />
 
       <Input
