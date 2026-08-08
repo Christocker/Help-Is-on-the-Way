@@ -4,7 +4,26 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+function isSupabaseConfigured(): boolean {
+  return Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
+}
+
+function redirectNotConfigured(backTo: string): never {
+  redirect(
+    `${backTo}?error=${encodeURIComponent(
+      "The app isn't connected to its database yet. Please try again later."
+    )}`
+  );
+}
+
 export async function signUp(formData: FormData) {
+  if (!isSupabaseConfigured()) {
+    redirectNotConfigured("/signup");
+  }
+
   const supabase = await createClient();
 
   const email = formData.get("email") as string;
@@ -46,6 +65,10 @@ export async function signUp(formData: FormData) {
 }
 
 export async function signIn(formData: FormData) {
+  if (!isSupabaseConfigured()) {
+    redirectNotConfigured("/login");
+  }
+
   const supabase = await createClient();
 
   const email = formData.get("email") as string;
@@ -74,6 +97,10 @@ export async function signOut() {
 }
 
 export async function resetPassword(formData: FormData) {
+  if (!isSupabaseConfigured()) {
+    redirectNotConfigured("/forgot-password");
+  }
+
   const supabase = await createClient();
 
   const email = formData.get("email") as string;
@@ -93,6 +120,10 @@ export async function resetPassword(formData: FormData) {
 }
 
 export async function updatePassword(formData: FormData) {
+  if (!isSupabaseConfigured()) {
+    redirectNotConfigured("/update-password");
+  }
+
   const supabase = await createClient();
 
   const password = formData.get("password") as string;
