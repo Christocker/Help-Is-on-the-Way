@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { UnverifiedBanner } from "@/components/auth/UnverifiedBanner";
 
 export default async function AuthLayout({
   children,
@@ -16,6 +17,8 @@ export default async function AuthLayout({
   if (!user) {
     redirect("/login");
   }
+
+  const isVerified = Boolean(user.email_confirmed_at);
 
   const [{ data: profile }, { count: unreadCount }] = await Promise.all([
     supabase
@@ -44,6 +47,13 @@ export default async function AuthLayout({
       />
       <main className="lg:pl-64">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          {!isVerified && (
+            <UnverifiedBanner
+              email={user.email ?? ""}
+              message="Your email address has not been verified."
+              detail="Please verify your email address within 24 hours to complete your account setup. Your account will remain pending — nothing will be deleted."
+            />
+          )}
           {children}
         </div>
       </main>

@@ -2,13 +2,14 @@ import Link from "next/link";
 import { SignUpForm } from "./SignUpForm";
 import { signUp } from "@/app/auth/actions";
 import { Logo } from "@/components/layout/Logo";
+import { ResendVerification } from "@/components/auth/ResendVerification";
 
 interface SignUpPageProps {
-  searchParams: Promise<{ error?: string; success?: string }>;
+  searchParams: Promise<{ error?: string; success?: string; email?: string }>;
 }
 
 export default async function SignUpPage({ searchParams }: SignUpPageProps) {
-  const { error, success } = await searchParams;
+  const { error, success, email } = await searchParams;
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-navy via-primary-900 to-primary-700 px-4 py-10">
@@ -63,8 +64,11 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
           <div className="space-y-4">
             <p className="rounded-lg bg-surface px-4 py-3 text-center text-xs text-muted">
               If you don&apos;t see the email, check your spam or junk folder.
-              The confirmation link expires after 24 hours.
+              The confirmation link is valid for 5 hours.
             </p>
+            <div className="rounded-xl border border-border bg-white p-4">
+              <ResendVerification email={email} />
+            </div>
             <Link href="/login" className="block">
               <button
                 type="button"
@@ -74,13 +78,8 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
               </button>
             </Link>
             <p className="text-center text-sm text-muted">
-              Didn&apos;t receive it?{" "}
-              <Link
-                href="/signup"
-                className="font-medium text-primary hover:text-primary-dark transition-colors"
-              >
-                Try again
-              </Link>
+              Your account is pending email verification. It will remain active —
+              nothing will be deleted.
             </p>
           </div>
         ) : (

@@ -11,12 +11,40 @@ function isSupabaseConfigured(): boolean {
   );
 }
 
+function siteUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL || "https://help-is-on-the-way.vercel.app"
+  );
+}
+
 function redirectNotConfigured(backTo: string): never {
   redirect(
     `${backTo}?error=${encodeURIComponent(
       "The app isn't connected to its database yet. Please try again later."
     )}`
   );
+}
+
+export async function resendVerificationEmail(email: string) {
+  if (!isSupabaseConfigured()) {
+    return { ok: false as const, error: "Email service is not configured." };
+  }
+
+  const supabase = await createClient();
+
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email,
+    options: {
+      emailRedirectTo: `${siteUrl()}/auth/callback`,
+    },
+  });
+
+  if (error) {
+    return { ok: false as const, error: error.message };
+  }
+
+  return { ok: true as const };
 }
 
 export async function signUp(formData: FormData) {
@@ -37,9 +65,6 @@ export async function signUp(formData: FormData) {
     .filter(Boolean)
     .join(" ");
 
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://help-is-on-the-way.vercel.app";
-
   const { error } = await supabase.auth.signUp({
     email,
     password,
@@ -52,7 +77,7 @@ export async function signUp(formData: FormData) {
         contact_number: contact_number || null,
         role: "client",
       },
-      emailRedirectTo: `${siteUrl}/auth/callback`,
+      emailRedirectTo: `${siteUrl()}/auth/callback`,
     },
   });
 
@@ -61,7 +86,7 @@ export async function signUp(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  redirect("/signup?success=1");
+  redirect(`/signup?success=1&email=${encodeURIComponent(email)}`);
 }
 
 export async function signIn(formData: FormData) {
@@ -80,6 +105,14 @@ export async function signIn(formData: FormData) {
   });
 
   if (error) {
+    // Unverified account → send the user to the verification page with the
+    // email pre-filled so they can resend, instead of a raw error.
+    const msg = error.message.toLowerCase();
+    if (msg.includes("not confirmed") || msg.includes("email not verified")) {
+      redirect(
+        `/auth/verify?email=${encodeURIComponent(email)}`
+      );
+    }
     redirect(`/login?error=${encodeURIComponent(error.message)}`);
   }
 
@@ -120,9 +153,7 @@ export async function resetPassword(formData: FormData) {
   const email = formData.get("email") as string;
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${
-      process.env.NEXT_PUBLIC_SITE_URL || "https://help-is-on-the-way.vercel.app"
-    }/update-password`,
+    redirectTo: `${siteUrl()}/update-password`,
   });
 
   if (error) {

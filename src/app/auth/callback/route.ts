@@ -4,21 +4,72 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next");
+  const token_hash = searchParams.get("token_hash");
+  const type = searchParams.get("type");
+  const error_code = searchParams.get("error_code");
+  const error_description = searchParams.get("error_description") ?? "";
+  const email = searchParams.get("email");
 
-  if (code) {
-    const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const supabase = await createClient();
 
-    if (!error) {
-      // If a custom "next" was requested, honor it; otherwise show the
-      // email-confirmed confirmation screen.
-      if (next) {
-        return NextResponse.redirect(`${origin}${next}`);
-      }
-      return NextResponse.redirect(`${origin}/auth/confirm`);
-    }
+  // Supabase may redirect to this route with an error already attached
+  // (e.g. expired or invalid link). Detect and route to the right state.
+  if (error_code) {
+    const isExpired =
+      error_code === "otp_expired" ||
+      error_description.toLowerCase().includes("expired");
+
+    const dest = new URL(origin);
+    dest.pathname = "/auth/verify";
+    if (email) dest.searchParams.set("email", email);
+    dest.searchParams.set("status", isExpired ? "expired" : "invalid");
+    return NextResponse.redirect(dest);
   }
 
-  return NextResponse.redirect(`${origin}/login?error=authCallbackFailed`);
+  // token_hash style links (some Supabase email templates use these)
+  if (token_hash && type) {
+    const { error } = await supabase.auth.verifyOtp({
+      type: type as "email" | "signup" | "magiclink" | "invite",
+      token_hash,
+    });
+
+    if (error) {
+      const dest = new URL(origin);
+      dest.pathname = "/auth/verify";
+      if (email) dest.searchParams.set("email", email);
+      dest.searchParams.set(
+        "status",
+        error.message.toLowerCase().includes("expired") ? "expired" : "invalid"
+      );
+      return NextResponse.redirect(dest);
+    }
+
+    return NextResponse.redirect(`${origin}/auth/confirm`);
+  }
+
+  // PKCE code exchange (the standard flow)
+  if (code) {
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (error) {
+      const dest = new URL(origin);
+      dest.pathname = "/auth/verify";
+      if (email) dest.searchParams.set("email", email);
+      dest.searchParams.set(
+        "status",
+        error.message.toLowerCase().includes("expired") ? "expired" : "invalid"
+      );
+      return NextResponse.redirect(dest);
+    }
+
+    // Successfully verified → confirmation success page
+    return NextResponse.redirect(`${origin}/auth/confirm`);
+  }
+
+  // No recognizable token → invalid state
+  const dest = new URL(origin);
+  dest.pathname = "/auth/verify";
+  if (email) dest.searchParams.set("email", email);
+  dest.searchParams.set("status", "invalid");
+  return NextResponse.redirect(dest);
 }

@@ -42,7 +42,12 @@ export async function updateSession(request: NextRequest) {
 
   const isAuthRoute = request.nextUrl.pathname.startsWith("/login") ||
     request.nextUrl.pathname.startsWith("/signup") ||
-    request.nextUrl.pathname.startsWith("/auth");
+    request.nextUrl.pathname.startsWith("/forgot-password") ||
+    request.nextUrl.pathname.startsWith("/update-password") ||
+    request.nextUrl.pathname.startsWith("/auth/callback");
+
+  // Verification result pages can be viewed by logged-in users too
+  // (e.g. already-verified or just-confirmed), so they are not "auth routes".
 
   const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
   const isProtectedRoute =
