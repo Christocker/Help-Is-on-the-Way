@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Help Is on the Way
+
+Free mental healthcare access platform connecting individuals with professional mental health services. We coordinate with partner providers so you don't have to pay.
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router) with TypeScript
+- **Styling**: Tailwind CSS v4
+- **Database & Auth**: Supabase (PostgreSQL + Row Level Security)
+- **Deployment**: Vercel
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- A Supabase project (free tier available at [supabase.com](https://supabase.com))
+
+### Environment Variables
+
+Copy `.env.example` to `.env.local` and fill in your Supabase credentials:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Database Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Go to your Supabase project's SQL Editor
+2. Run the contents of `supabase-schema.sql`
+3. This creates all tables, indexes, RLS policies, and seed data for categories
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Install & Run
 
-## Learn More
+```bash
+npm install
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Open [http://localhost:3000](http://localhost:3000).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Creating an Admin Account
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Sign up normally through the application
+2. In your Supabase SQL Editor, run:
 
-## Deploy on Vercel
+```sql
+UPDATE profiles SET role = 'admin' WHERE email = 'your-email@example.com';
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+├── app/
+│   ├── (auth)/          # Protected client pages
+│   │   ├── appointments/
+│   │   ├── book/        # Booking workflow
+│   │   ├── dashboard/
+│   │   ├── instructions/
+│   │   ├── notifications/
+│   │   └── profile/
+│   ├── admin/           # Admin pages
+│   │   ├── appointments/
+│   │   ├── availability/
+│   │   ├── categories/
+│   │   ├── clients/
+│   │   └── events/
+│   ├── auth/            # Auth actions & callback
+│   ├── login/
+│   ├── signup/
+│   ├── about/
+│   ├── how-it-works/
+│   ├── faq/
+│   ├── contact/
+│   └── resources/
+├── components/
+│   ├── ui/              # Reusable UI components
+│   └── layout/          # Layout components (Sidebar, SupportSection)
+├── lib/
+│   ├── supabase/        # Supabase clients (browser, server, proxy)
+│   ├── types.ts         # TypeScript type definitions
+│   ├── data.ts          # Category & event seed data
+│   └── utils.ts         # Utility functions
+└── proxy.ts             # Auth proxy (route protection)
+```
+
+## Key Features
+
+- **Client**: Registration/login, dashboard, booking workflow (Category → Event → Date/Time → Review), appointment tracking, profile management
+- **Admin**: Dashboard with stats, appointment management (confirm/reschedule/cancel), client list, category & event management, availability management
+- **Booking**: 4-step guided booking flow with progress indicator and no payment step
+- **Security**: Row Level Security (RLS), role-based authorization, protected routes
+- **SEO**: Sitemap, robots.txt, Open Graph metadata, semantic HTML
+- **Responsive**: Mobile-first design with collapsible sidebar navigation
+
+## Deployment
+
+This project is configured for Vercel deployment. The repository is connected and automatically deploys on push.
+
+Set the following environment variables in your Vercel project settings:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+## License
+
+Private project. All rights reserved.
