@@ -120,16 +120,18 @@ export default function AdminCategoriesPage() {
 
     // Persist by swapping the sort_order values.
     const supabase = createClient();
-    const { error } = await supabase
-      .from("categories")
-      .upsert(
-        [
-          { id: category.id, sort_order: target.sort_order },
-          { id: target.id, sort_order: category.sort_order },
-        ],
-        { onConflict: "id" }
-      );
+    const [err1, err2] = await Promise.all([
+      supabase
+        .from("categories")
+        .update({ sort_order: target.sort_order })
+        .eq("id", category.id),
+      supabase
+        .from("categories")
+        .update({ sort_order: category.sort_order })
+        .eq("id", target.id),
+    ]);
 
+    const error = err1.error ?? err2.error;
     if (error) {
       setMessage({
         type: "error",
