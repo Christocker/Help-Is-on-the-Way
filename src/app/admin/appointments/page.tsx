@@ -97,83 +97,70 @@ export default function AdminAppointmentsPage() {
       return sortOrder === "desc" ? -cmp || 0 : cmp || 0;
     });
 
-  async function handleStatusChange(newStatus: AppointmentStatus) {
-    if (!selectedAppointment) return;
-    setSaving(true);
-    setSaveMessage(null);
-    try {
-      const supabase = createClient();
-      const { error: updateError } = await supabase
-        .from("appointments")
-        .update({ status: newStatus })
-        .eq("id", selectedAppointment.id);
-
-      if (updateError) throw updateError;
-
-      setSelectedAppointment({ ...selectedAppointment, status: newStatus });
-      setAppointments((prev) =>
-        prev.map((a) =>
-          a.id === selectedAppointment.id ? { ...a, status: newStatus } : a
-        )
-      );
-      setSaveMessage({ type: "success", text: "Status updated successfully" });
-
-      // Notify the client by email about the status change.
-      const notify = await notifyAppointmentStatus({
-        appointmentId: selectedAppointment.id,
-        status: newStatus,
-      });
-      if (notify.ok) {
-        setSaveMessage({
-          type: "success",
-          text: "Status updated and the client has been notified by email.",
-        });
-      } else {
-        setSaveMessage({
-          type: "error",
-          text: `Status updated, but the email could not be sent: ${notify.error ?? "unknown error"}`,
-        });
-      }
-    } catch (err) {
-      setSaveMessage({
-        type: "error",
-        text: err instanceof Error ? err.message : "Failed to update status",
-      });
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleSaveDetails(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSaveChanges({
+    newStatus,
+    rescheduleDate,
+    rescheduleTime,
+  }: {
+    newStatus: AppointmentStatus;
+    rescheduleDate?: string | null;
+    rescheduleTime?: string | null;
+  }) {
     if (!selectedAppointment) return;
     setSaving(true);
     setSaveMessage(null);
 
-    const form = e.currentTarget as HTMLFormElement;
+    const form = document.getElementById(
+      `appointment-form-${selectedAppointment.id}`
+    ) as HTMLFormElement | null;
     const adminNotes = (
-      form.elements.namedItem("admin_notes") as HTMLTextAreaElement
+      form?.elements.namedItem("admin_notes") as HTMLTextAreaElement | null
     )?.value;
     const argaoReference = (
-      form.elements.namedItem("argao_reference") as HTMLInputElement
+      form?.elements.namedItem("argao_reference") as HTMLInputElement | null
     )?.value;
 
     try {
       const supabase = createClient();
+
+      const updatePayload: Record<string, unknown> = {
+        status: newStatus,
+        admin_notes: adminNotes || null,
+        argao_reference: argaoReference || null,
+      };
+
+      // If rescheduled, also update the requested date/time.
+      if (newStatus === "rescheduled") {
+        if (!rescheduleDate || !rescheduleTime) {
+          setSaveMessage({
+            type: "error",
+            text: "Please select a new date and time for the rescheduled appointment.",
+          });
+          setSaving(false);
+          return;
+        }
+        updatePayload.requested_date = rescheduleDate;
+        updatePayload.requested_time = rescheduleTime;
+      }
+
       const { error: updateError } = await supabase
         .from("appointments")
-        .update({
-          admin_notes: adminNotes || null,
-          argao_reference: argaoReference || null,
-        })
+        .update(updatePayload)
         .eq("id", selectedAppointment.id);
 
       if (updateError) throw updateError;
 
-      const updated = {
+      const updated: AppointmentWithDetails = {
         ...selectedAppointment,
-        admin_notes: adminNotes || null,
-        argao_reference: argaoReference || null,
+        status: newStatus,
+        admin_notes: updatePayload.admin_notes as string | null,
+        argao_reference: updatePayload.argao_reference as string | null,
+        requested_date:
+          (updatePayload.requested_date as string) ??
+          selectedAppointment.requested_date,
+        requested_time:
+          (updatePayload.requested_time as string) ??
+          selectedAppointment.requested_time,
       };
       setSelectedAppointment(updated);
       setAppointments((prev) =>
@@ -181,12 +168,31 @@ export default function AdminAppointmentsPage() {
       );
       setSaveMessage({
         type: "success",
-        text: "Details saved successfully",
+        text: "Changes saved successfully",
       });
+
+      // Notify the client by email about the status change.
+      const notify = await notifyAppointmentStatus({
+        appointmentId: selectedAppointment.id,
+        status: newStatus,
+        requestedDate: updated.requested_date,
+        requestedTime: updated.requested_time,
+      });
+      if (notify.ok) {
+        setSaveMessage({
+          type: "success",
+          text: "Changes saved and the client has been notified by email.",
+        });
+      } else {
+        setSaveMessage({
+          type: "error",
+          text: `Changes saved, but the email could not be sent: ${notify.error ?? "unknown error"}`,
+        });
+      }
     } catch (err) {
       setSaveMessage({
         type: "error",
-        text: err instanceof Error ? err.message : "Failed to save details",
+        text: err instanceof Error ? err.message : "Failed to save changes",
       });
     } finally {
       setSaving(false);
@@ -339,8 +345,7 @@ export default function AdminAppointmentsPage() {
                   <div className="w-full bg-surface rounded-lg border border-border p-4 mt-1 slide-in-right">
                     <AppointmentDetail
                       appointment={selectedAppointment}
-                      onStatusChange={handleStatusChange}
-                      onSaveDetails={handleSaveDetails}
+                      onSaveChanges={handleSaveChanges}
                       saving={saving}
                       saveMessage={saveMessage}
                     />
@@ -355,19 +360,65 @@ export default function AdminAppointmentsPage() {
   );
 }
 
+function toLocalDateString(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function generateRescheduleDates(): { value: string; label: string }[] {
+  const dates: { value: string; label: string }[] = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  for (let i = 1; i <= 30; i++) {
+    const date = new Date(today);
+    date.setDate(today.getDate() + i);
+    const label = date.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+    dates.push({ value: toLocalDateString(date), label });
+  }
+  return dates;
+}
+
+function generateRescheduleTimes(): { value: string; label: string }[] {
+  const slots: { value: string; label: string }[] = [];
+  for (let h = 8; h <= 17; h++) {
+    const hour = h % 12 || 12;
+    const ampm = h < 12 ? "AM" : "PM";
+    const value = `${h.toString().padStart(2, "0")}:00`;
+    slots.push({ value, label: `${hour}:00 ${ampm}` });
+  }
+  return slots;
+}
+
+const RESCHEDULE_DATES = generateRescheduleDates();
+const RESCHEDULE_TIMES = generateRescheduleTimes();
+
 function AppointmentDetail({
   appointment,
-  onStatusChange,
-  onSaveDetails,
+  onSaveChanges,
   saving,
   saveMessage,
 }: {
   appointment: AppointmentWithDetails;
-  onStatusChange: (status: AppointmentStatus) => void;
-  onSaveDetails: (e: React.FormEvent) => void;
+  onSaveChanges: (input: {
+    newStatus: AppointmentStatus;
+    rescheduleDate?: string | null;
+    rescheduleTime?: string | null;
+  }) => void;
   saving: boolean;
   saveMessage: { type: "success" | "error"; text: string } | null;
 }) {
+  const [status, setStatus] = useState<AppointmentStatus>(appointment.status);
+  const [rescheduleDate, setRescheduleDate] = useState<string>("");
+  const [rescheduleTime, setRescheduleTime] = useState<string>("");
+
+  const isRescheduled = status === "rescheduled";
+
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <div>
@@ -411,16 +462,25 @@ function AppointmentDetail({
         </dl>
       </div>
 
-      <form onSubmit={onSaveDetails} className="space-y-4">
+      <form
+        id={`appointment-form-${appointment.id}`}
+        className="space-y-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSaveChanges({
+            newStatus: status,
+            rescheduleDate: isRescheduled ? rescheduleDate : null,
+            rescheduleTime: isRescheduled ? rescheduleTime : null,
+          });
+        }}
+      >
         <div>
           <label className="block text-sm font-medium text-foreground mb-1.5">
             Update Status
           </label>
           <select
-            value={appointment.status}
-            onChange={(e) =>
-              onStatusChange(e.target.value as AppointmentStatus)
-            }
+            value={status}
+            onChange={(e) => setStatus(e.target.value as AppointmentStatus)}
             disabled={saving}
             className="w-full rounded-lg border border-border px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-light/40 focus:border-primary-light disabled:opacity-50"
           >
@@ -430,7 +490,62 @@ function AppointmentDetail({
               </option>
             ))}
           </select>
+          <p className="mt-1 text-xs text-muted">
+            Select the new status, then click Save Changes.
+          </p>
         </div>
+
+        {isRescheduled && (
+          <div className="rounded-lg border border-primary-100 bg-primary-50 p-3 space-y-3">
+            <p className="text-xs font-semibold text-primary-800">
+              New Schedule
+            </p>
+            <div>
+              <label
+                htmlFor={`reschedule_date_${appointment.id}`}
+                className="block text-sm font-medium text-foreground mb-1.5"
+              >
+                New Date
+              </label>
+              <select
+                id={`reschedule_date_${appointment.id}`}
+                value={rescheduleDate}
+                onChange={(e) => setRescheduleDate(e.target.value)}
+                disabled={saving}
+                className="w-full rounded-lg border border-border px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-light/40 focus:border-primary-light disabled:opacity-50"
+              >
+                <option value="">Select new date...</option>
+                {RESCHEDULE_DATES.map((d) => (
+                  <option key={d.value} value={d.value}>
+                    {d.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label
+                htmlFor={`reschedule_time_${appointment.id}`}
+                className="block text-sm font-medium text-foreground mb-1.5"
+              >
+                New Time
+              </label>
+              <select
+                id={`reschedule_time_${appointment.id}`}
+                value={rescheduleTime}
+                onChange={(e) => setRescheduleTime(e.target.value)}
+                disabled={saving}
+                className="w-full rounded-lg border border-border px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-light/40 focus:border-primary-light disabled:opacity-50"
+              >
+                <option value="">Select new time...</option>
+                {RESCHEDULE_TIMES.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
 
         <div>
           <label

@@ -87,6 +87,8 @@ function buildEmailHtml(input: {
 export async function notifyAppointmentStatus(input: {
   appointmentId: string;
   status: AppointmentStatus;
+  requestedDate?: string;
+  requestedTime?: string;
 }): Promise<{ ok: boolean; error?: string }> {
   const supabase = await createClient();
 
@@ -128,12 +130,15 @@ export async function notifyAppointmentStatus(input: {
   const clientName =
     appointment.profiles?.full_name?.split(" ")[0] ?? "there";
 
+  const eventDate = input.requestedDate ?? appointment.requested_date;
+  const eventTime = input.requestedTime ?? appointment.requested_time;
+
   const html = buildEmailHtml({
     clientName,
     categoryName: appointment.categories?.name ?? "Mental Health Service",
     eventName: appointment.events?.name ?? "Appointment",
-    date: formatDate(appointment.requested_date),
-    time: formatTime(appointment.requested_time),
+    date: formatDate(eventDate),
+    time: formatTime(eventTime),
     status: input.status,
   });
 
