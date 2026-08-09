@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { normalizePhoneNumber } from "@/lib/utils";
 
 function isSupabaseConfigured(): boolean {
@@ -92,7 +92,7 @@ export async function signUp(formData: FormData) {
     .filter(Boolean)
     .join(" ");
 
-  const { error } = await supabase.auth.signUp({
+  const { data: signUpData, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -110,6 +110,30 @@ export async function signUp(formData: FormData) {
 
   if (error) {
     redirect(`/signup?error=${encodeURIComponent(error.message)}`);
+  }
+
+  // Ensure the profile row has the correct contact number (and name).
+  // The auth trigger creates the profile, but on some projects it may be
+  // stale; update it directly via the service client (bypasses RLS).
+  if (signUpData?.user?.id) {
+    try {
+      const service = await createServiceClient();
+      await service
+        .from("profiles")
+        .upsert(
+          {
+            id: signUpData.user.id,
+            full_name,
+            email,
+            contact_number: contact_number || null,
+            role: "client",
+          },
+          { onConflict: "id" }
+        );
+    } catch (profileErr) {
+      // Non-fatal: the trigger may have handled it. Log for debugging.
+      console.error("Profile upsert after signup failed:", profileErr);
+    }
   }
 
   revalidatePath("/", "layout");
