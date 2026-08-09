@@ -10,6 +10,13 @@ interface StepDateTimeProps {
   onSelectTime: (time: string) => void;
 }
 
+function toLocalDateString(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 function generateDates() {
   const dates: { dateString: string; dayOfWeek: string; day: number; month: string }[] = [];
   const today = new Date();
@@ -22,7 +29,7 @@ function generateDates() {
     const dayOfWeek = date.toLocaleDateString("en-US", { weekday: "short" });
     const day = date.getDate();
     const month = date.toLocaleDateString("en-US", { month: "short" });
-    const dateString = date.toISOString().split("T")[0];
+    const dateString = toLocalDateString(date);
 
     dates.push({ dateString, dayOfWeek, day, month });
   }
