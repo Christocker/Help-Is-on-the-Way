@@ -34,8 +34,9 @@ export default function AdminCategoriesPage() {
     name: "",
     slug: "",
     description: "",
-    sort_order: 100,
+    sort_order: 1,
   });
+  const [addPhoto, setAddPhoto] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
 
   const fetchCategories = useCallback(async () => {
@@ -160,19 +161,41 @@ export default function AdminCategoriesPage() {
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/^-|-$/g, "");
       const supabase = createClient();
-      const { error: insertError } = await supabase.from("categories").insert({
-        name: addForm.name,
-        slug,
-        description: addForm.description,
-        sort_order: addForm.sort_order,
-        is_active: true,
-      });
+      const { data: inserted, error: insertError } = await supabase
+        .from("categories")
+        .insert({
+          name: addForm.name,
+          slug,
+          description: addForm.description,
+          sort_order: addForm.sort_order,
+          is_active: true,
+        })
+        .select("id")
+        .single();
 
       if (insertError) throw insertError;
 
+      // If a photo was chosen, upload it and attach to the new category.
+      if (inserted?.id && addPhoto) {
+        const uploadResult = await uploadCategoryImage(inserted.id, addPhoto);
+        if (!uploadResult.ok) {
+          setMessage({
+            type: "error",
+            text: `Category created, but the photo could not be uploaded: ${uploadResult.error ?? "unknown error"}`,
+          });
+        } else {
+          setMessage({
+            type: "success",
+            text: "Category and photo added successfully",
+          });
+        }
+      } else {
+        setMessage({ type: "success", text: "Category added successfully" });
+      }
+
       setShowAddForm(false);
+      setAddPhoto(null);
       setAddForm({ name: "", slug: "", description: "", sort_order: 1 });
-      setMessage({ type: "success", text: "Category added successfully" });
       await fetchCategories();
     } catch (err) {
       setMessage({
@@ -292,6 +315,20 @@ export default function AdminCategoriesPage() {
                 required
                 className="w-full rounded-lg border border-border px-3.5 py-2.5 text-sm transition-colors duration-200 placeholder:text-muted-light focus:outline-none focus:ring-2 focus:ring-primary-light/40 focus:border-primary-light resize-y"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Photo
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setAddPhoto(e.target.files?.[0] ?? null)}
+                className="block w-full text-sm text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-primary-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-primary-700 file:cursor-pointer hover:file:bg-primary-100"
+              />
+              <p className="mt-1 text-xs text-muted">
+                Optional. Upload a photo for the category, or add one later via Edit.
+              </p>
             </div>
             <Input
               label="Sort Order"
