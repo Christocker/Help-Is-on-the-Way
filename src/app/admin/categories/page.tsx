@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -27,17 +27,18 @@ export default function AdminCategoriesPage() {
   const [editForm, setEditForm] = useState({
     name: "",
     description: "",
-    sort_order: 0,
   });
   const [showAddForm, setShowAddForm] = useState(false);
   const [addForm, setAddForm] = useState({
     name: "",
     slug: "",
     description: "",
-    sort_order: 1,
   });
   const [addPhoto, setAddPhoto] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const rowRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
+  const firstPositions = useRef<Map<string, number>>(new Map());
 
   const fetchCategories = useCallback(async () => {
     setLoading(true);
@@ -64,6 +65,78 @@ export default function AdminCategoriesPage() {
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
+
+  function measurePositions() {
+    const map = new Map<string, number>();
+    rowRefs.current.forEach((el, id) => {
+      if (el) map.set(id, el.getBoundingClientRect().top);
+    });
+    firstPositions.current = map;
+  }
+
+  function flip() {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        rowRefs.current.forEach((el, id) => {
+          if (!el) return;
+          const first = firstPositions.current.get(id);
+          if (first === undefined) return;
+          const current = el.getBoundingClientRect().top;
+          const delta = first - current;
+          if (delta === 0) return;
+          el.style.transition = "none";
+          el.style.transform = `translateY(${delta}px)`;
+          requestAnimationFrame(() => {
+            el.style.transition = "transform 300ms cubic-bezier(0.22, 1, 0.36, 1)";
+            el.style.transform = "";
+          });
+        });
+      });
+    });
+  }
+
+  async function handleMoveCategory(
+    category: Category,
+    direction: "up" | "down"
+  ) {
+    const index = categories.findIndex((c) => c.id === category.id);
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (index === -1 || targetIndex < 0 || targetIndex >= categories.length) {
+      return;
+    }
+
+    const target = categories[targetIndex];
+    setMessage(null);
+
+    // Optimistically swap in the UI with a smooth animation.
+    measurePositions();
+    setCategories((prev) => {
+      const next = [...prev];
+      next[index] = target;
+      next[targetIndex] = category;
+      return next;
+    });
+    flip();
+
+    // Persist by swapping the sort_order values.
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("categories")
+      .upsert(
+        [
+          { id: category.id, sort_order: target.sort_order },
+          { id: target.id, sort_order: category.sort_order },
+        ],
+        { onConflict: "id" }
+      );
+
+    if (error) {
+      setMessage({
+        type: "error",
+        text: error.message || "Failed to reorder categories",
+      });
+    }
+  }
 
   async function handleToggleActive(category: Category) {
     setMessage(null);
@@ -95,7 +168,6 @@ export default function AdminCategoriesPage() {
     setEditForm({
       name: category.name,
       description: category.description,
-      sort_order: category.sort_order,
     });
   }
 
@@ -118,7 +190,6 @@ export default function AdminCategoriesPage() {
           name: editForm.name,
           description: editForm.description,
           slug,
-          sort_order: editForm.sort_order,
         })
         .eq("id", categoryId);
 
@@ -132,7 +203,6 @@ export default function AdminCategoriesPage() {
                 name: editForm.name,
                 description: editForm.description,
                 slug,
-                sort_order: editForm.sort_order,
               }
             : c
         )
@@ -167,7 +237,7 @@ export default function AdminCategoriesPage() {
           name: addForm.name,
           slug,
           description: addForm.description,
-          sort_order: addForm.sort_order,
+          sort_order: categories.length + 1,
           is_active: true,
         })
         .select("id")
@@ -195,7 +265,7 @@ export default function AdminCategoriesPage() {
 
       setShowAddForm(false);
       setAddPhoto(null);
-      setAddForm({ name: "", slug: "", description: "", sort_order: 1 });
+      setAddForm({ name: "", slug: "", description: "" });
       await fetchCategories();
     } catch (err) {
       setMessage({
@@ -249,17 +319,7 @@ export default function AdminCategoriesPage() {
         <Button
           variant={showAddForm ? "secondary" : "primary"}
           size="sm"
-          onClick={() => {
-            setShowAddForm(!showAddForm);
-            if (!showAddForm) {
-              // Default sort order to the next number after the current count.
-              const nextOrder =
-                categories.length > 0
-                  ? Math.max(...categories.map((c) => c.sort_order)) + 1
-                  : 1;
-              setAddForm((prev) => ({ ...prev, sort_order: nextOrder }));
-            }
-          }}
+          onClick={() => setShowAddForm(!showAddForm)}
         >
           {showAddForm ? "Cancel" : "Add Category"}
         </Button>
@@ -330,14 +390,6 @@ export default function AdminCategoriesPage() {
                 Optional. Upload a photo for the category, or add one later via Edit.
               </p>
             </div>
-            <Input
-              label="Sort Order"
-              type="number"
-              value={addForm.sort_order}
-              onChange={(e) =>
-                setAddForm({ ...addForm, sort_order: Number(e.target.value) })
-              }
-            />
             <Button type="submit" size="sm" isLoading={saving}>
               Create Category
             </Button>
@@ -372,9 +424,12 @@ export default function AdminCategoriesPage() {
       ) : (
         <Card padding="none">
           <div className="divide-y divide-border">
-            {categories.map((cat) => (
+            {categories.map((cat, index) => (
               <div
                 key={cat.id}
+                ref={(el) => {
+                  rowRefs.current.set(cat.id, el);
+                }}
                 className="px-6 py-4 hover:bg-surface transition-colors"
               >
                 {editingId === cat.id ? (
@@ -419,17 +474,6 @@ export default function AdminCategoriesPage() {
                           setEditForm({ ...editForm, name: e.target.value })
                         }
                       />
-                      <Input
-                        label="Sort Order"
-                        type="number"
-                        value={editForm.sort_order}
-                        onChange={(e) =>
-                          setEditForm({
-                            ...editForm,
-                            sort_order: Number(e.target.value),
-                          })
-                        }
-                      />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-1.5">
@@ -465,7 +509,31 @@ export default function AdminCategoriesPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex flex-col gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleMoveCategory(cat, "up")}
+                        disabled={index === 0}
+                        aria-label={`Move ${cat.name} up`}
+                        className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-white text-muted transition-colors hover:bg-surface hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveCategory(cat, "down")}
+                        disabled={index === categories.length - 1}
+                        aria-label={`Move ${cat.name} down`}
+                        className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-white text-muted transition-colors hover:bg-surface hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                        </svg>
+                      </button>
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium text-foreground">
@@ -482,7 +550,7 @@ export default function AdminCategoriesPage() {
                         {cat.description}
                       </p>
                       <p className="text-xs text-muted-light mt-0.5">
-                        Slug: {cat.slug} &middot; Order: {cat.sort_order}
+                        Slug: {cat.slug}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
