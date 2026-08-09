@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createBrowserSdk } from "@supabase/supabase-js";
 import { sendMail, textFromHtml } from "@/lib/email";
 import { STATUS_LABELS, STATUS_DESCRIPTIONS } from "@/lib/types";
 import type { AppointmentStatus } from "@/lib/types";
@@ -152,4 +153,175 @@ export async function notifyAppointmentStatus(input: {
   });
 
   return result;
+}
+
+// ============================================
+// Image upload / delete for categories & events
+// ============================================
+
+const IMAGE_BUCKET = "images";
+
+function serviceSdk() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return null;
+  return createBrowserSdk(url, key, { auth: { persistSession: false } });
+}
+
+async function requireAdmin() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.role !== "admin") return null;
+  return user;
+}
+
+function publicImageUrl(path: string): string {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  return `${url}/storage/v1/object/public/${IMAGE_BUCKET}/${path}`;
+}
+
+// path like "categories/<id>.jpg"
+function pathFromUrl(imageUrl: string | null): string | null {
+  if (!imageUrl) return null;
+  const marker = `/storage/v1/object/public/${IMAGE_BUCKET}/`;
+  const idx = imageUrl.indexOf(marker);
+  if (idx === -1) return null;
+  return imageUrl.slice(idx + marker.length);
+}
+
+async function uploadImage(
+  file: File,
+  folder: "categories" | "events",
+  id: string
+): Promise<{ ok: boolean; url?: string; error?: string }> {
+  const admin = await requireAdmin();
+  if (!admin) return { ok: false, error: "Unauthorized." };
+
+  const service = serviceSdk();
+  if (!service) return { ok: false, error: "Storage is not configured." };
+
+  if (!file || !file.size) return { ok: false, error: "No file provided." };
+
+  const ext = (file.name.split(".").pop() || "jpg")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+  const allowed = ["jpg", "jpeg", "png", "webp", "gif"];
+  if (!allowed.includes(ext)) {
+    return { ok: false, error: "Only image files (jpg, png, webp, gif) are allowed." };
+  }
+
+  const path = `${folder}/${id}.${ext}`;
+
+  const { error: uploadError } = await service.storage
+    .from(IMAGE_BUCKET)
+    .upload(path, file, { upsert: true, contentType: file.type });
+
+  if (uploadError) return { ok: false, error: uploadError.message };
+
+  return { ok: true, url: publicImageUrl(path) };
+}
+
+async function deleteImage(
+  imageUrl: string | null,
+  folder: "categories" | "events",
+  id: string
+): Promise<{ ok: boolean; error?: string }> {
+  const admin = await requireAdmin();
+  if (!admin) return { ok: false, error: "Unauthorized." };
+
+  const service = serviceSdk();
+  if (!service) return { ok: false, error: "Storage is not configured." };
+
+  // Try to remove by the path stored in the URL, falling back to
+  // the conventional folder/id path.
+  const paths: string[] = [];
+  const fromUrl = pathFromUrl(imageUrl);
+  if (fromUrl) paths.push(fromUrl);
+  paths.push(`${folder}/${id}.jpg`);
+  paths.push(`${folder}/${id}.png`);
+
+  const { error } = await service.storage
+    .from(IMAGE_BUCKET)
+    .remove([...new Set(paths)]);
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+export async function uploadCategoryImage(
+  categoryId: string,
+  file: File
+): Promise<{ ok: boolean; url?: string; error?: string }> {
+  const result = await uploadImage(file, "categories", categoryId);
+  if (!result.ok) return result;
+
+  const supabase = await createClient();
+  const { error: dbError } = await supabase
+    .from("categories")
+    .update({ image_url: result.url })
+    .eq("id", categoryId);
+
+  if (dbError) return { ok: false, error: dbError.message };
+  return { ok: true, url: result.url };
+}
+
+export async function deleteCategoryImage(
+  categoryId: string,
+  currentImageUrl: string | null
+): Promise<{ ok: boolean; error?: string }> {
+  const result = await deleteImage(currentImageUrl, "categories", categoryId);
+  if (!result.ok) return result;
+
+  const supabase = await createClient();
+  const { error: dbError } = await supabase
+    .from("categories")
+    .update({ image_url: null })
+    .eq("id", categoryId);
+
+  if (dbError) return { ok: false, error: dbError.message };
+  return { ok: true };
+}
+
+export async function uploadEventImage(
+  eventId: string,
+  file: File
+): Promise<{ ok: boolean; url?: string; error?: string }> {
+  const result = await uploadImage(file, "events", eventId);
+  if (!result.ok) return result;
+
+  const supabase = await createClient();
+  const { error: dbError } = await supabase
+    .from("events")
+    .update({ image_url: result.url })
+    .eq("id", eventId);
+
+  if (dbError) return { ok: false, error: dbError.message };
+  return { ok: true, url: result.url };
+}
+
+export async function deleteEventImage(
+  eventId: string,
+  currentImageUrl: string | null
+): Promise<{ ok: boolean; error?: string }> {
+  const result = await deleteImage(currentImageUrl, "events", eventId);
+  if (!result.ok) return result;
+
+  const supabase = await createClient();
+  const { error: dbError } = await supabase
+    .from("events")
+    .update({ image_url: null })
+    .eq("id", eventId);
+
+  if (dbError) return { ok: false, error: dbError.message };
+  return { ok: true };
 }

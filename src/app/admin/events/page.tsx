@@ -9,6 +9,11 @@ import { Input } from "@/components/ui/Input";
 import { Spinner } from "@/components/ui/Loading";
 import { Event, Category } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { AdminPhotoUploader } from "@/components/admin/AdminPhotoUploader";
+import {
+  uploadEventImage,
+  deleteEventImage,
+} from "@/app/admin/actions";
 
 interface CategoryWithEvents extends Category {
   events: Event[];
@@ -467,7 +472,18 @@ export default function AdminEventsPage() {
                           </div>
                         </div>
                       ) : (
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex flex-wrap items-start gap-3">
+                          <AdminPhotoUploader
+                            imageUrl={event.image_url}
+                            alt={`${event.name} photo`}
+                            size="sm"
+                            onUpload={(file) =>
+                              uploadEventImage(event.id, file)
+                            }
+                            onDelete={() =>
+                              deleteEventImage(event.id, event.image_url)
+                            }
+                          />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <p className="text-sm font-medium text-foreground">
@@ -493,24 +509,24 @@ export default function AdminEventsPage() {
                                 Slug: {event.slug}
                               </p>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => startEdit(event)}
-                            >
-                              Edit
-                            </Button>
-                            <Button
-                              variant={
-                                event.is_active ? "secondary" : "outline"
-                              }
-                              size="sm"
-                              onClick={() => handleToggleActive(event)}
-                            >
-                              {event.is_active ? "Deactivate" : "Activate"}
-                            </Button>
+                            <div className="flex items-center gap-2 mt-2 shrink-0">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => startEdit(event)}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                variant={
+                                  event.is_active ? "secondary" : "outline"
+                                }
+                                size="sm"
+                                onClick={() => handleToggleActive(event)}
+                              >
+                                {event.is_active ? "Deactivate" : "Activate"}
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       )}

@@ -9,6 +9,11 @@ import { Input } from "@/components/ui/Input";
 import { Spinner } from "@/components/ui/Loading";
 import { Category } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { AdminPhotoUploader } from "@/components/admin/AdminPhotoUploader";
+import {
+  uploadCategoryImage,
+  deleteCategoryImage,
+} from "@/app/admin/actions";
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -381,7 +386,14 @@ export default function AdminCategoriesPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex flex-wrap items-start gap-4">
+                    <AdminPhotoUploader
+                      imageUrl={cat.image_url}
+                      alt={`${cat.name} photo`}
+                      size="md"
+                      onUpload={(file) => uploadCategoryImage(cat.id, file)}
+                      onDelete={() => deleteCategoryImage(cat.id, cat.image_url)}
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium text-foreground">
@@ -400,22 +412,22 @@ export default function AdminCategoriesPage() {
                       <p className="text-xs text-muted-light mt-0.5">
                         Slug: {cat.slug} &middot; Order: {cat.sort_order}
                       </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => startEdit(cat)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant={cat.is_active ? "secondary" : "outline"}
-                        size="sm"
-                        onClick={() => handleToggleActive(cat)}
-                      >
-                        {cat.is_active ? "Deactivate" : "Activate"}
-                      </Button>
+                      <div className="mt-3 flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => startEdit(cat)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant={cat.is_active ? "secondary" : "outline"}
+                          size="sm"
+                          onClick={() => handleToggleActive(cat)}
+                        >
+                          {cat.is_active ? "Deactivate" : "Activate"}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}
