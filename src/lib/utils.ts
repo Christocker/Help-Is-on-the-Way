@@ -29,3 +29,33 @@ export function getInitials(name: string): string {
     .toUpperCase()
     .substring(0, 2);
 }
+
+// Normalizes common Philippine phone formats to a consistent +63 form.
+// Accepts: 09171234567, 9171234567, +639171234567, +63 917 123 4567, etc.
+export function normalizePhoneNumber(input: string): string {
+  if (!input) return "";
+  const digits = input.replace(/\D/g, "");
+  if (digits.length === 10 && digits.startsWith("9")) {
+    return `+63${digits}`;
+  }
+  if (digits.length === 11 && digits.startsWith("0")) {
+    return `+63${digits.slice(1)}`;
+  }
+  if (digits.length === 12 && digits.startsWith("63")) {
+    return `+63${digits.slice(2)}`;
+  }
+  if (digits.length === 13 && digits.startsWith("63")) {
+    return `+63${digits.slice(2)}`;
+  }
+  return input.trim();
+}
+
+export function isValidPhilippineMobile(phone: string): boolean {
+  const digits = phone.replace(/\D/g, "");
+  return (
+    (digits.length === 10 && digits.startsWith("9")) ||
+    (digits.length === 11 && digits.startsWith("0")) ||
+    (digits.length === 12 && digits.startsWith("63")) ||
+    (digits.length === 13 && digits.startsWith("63"))
+  );
+}

@@ -119,10 +119,12 @@ export function SignUpForm({ action }: SignUpFormProps) {
       <Input
         id="contact_number"
         name="contact_number"
-        type="tel"
+        type="text"
+        inputMode="tel"
         label="Contact Number"
-        placeholder="09123456789"
+        placeholder="+63 917 123 4567"
         autoComplete="tel"
+        hint="Your Philippine mobile number, e.g. +63 917 123 4567 or 09171234567. Optional."
       />
 
       <div className="w-full">

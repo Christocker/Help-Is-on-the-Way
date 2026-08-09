@@ -9,6 +9,7 @@ import { StepEvent } from "./_components/StepEvent";
 import { StepDateTime } from "./_components/StepDateTime";
 import { StepReview } from "./_components/StepReview";
 import { Button } from "@/components/ui/Button";
+import { getCategoryById, getEventById } from "@/lib/data";
 import { BookingData } from "@/lib/types";
 
 type BookingState = {
@@ -130,9 +131,38 @@ export default function BookPage() {
         throw new Error("You must be logged in to book an appointment.");
       }
 
+      // The booking UI uses friendly ids ("cat-1", "evt-1a"); the database
+      // stores real UUIDs in the categories/events tables. Resolve them here
+      // so the appointment references valid rows.
+      const staticCategory = getCategoryById(booking.category_id);
+      const staticEvent = getEventById(booking.event_id);
+
+      if (!staticCategory?.slug || !staticEvent?.slug) {
+        throw new Error("Selected service could not be found. Please try again.");
+      }
+
+      const [{ data: dbCategory }, { data: dbEvent }] = await Promise.all([
+        supabase
+          .from("categories")
+          .select("id")
+          .eq("slug", staticCategory.slug)
+          .single(),
+        supabase
+          .from("events")
+          .select("id")
+          .eq("slug", staticEvent.slug)
+          .single(),
+      ]);
+
+      if (!dbCategory?.id || !dbEvent?.id) {
+        throw new Error(
+          "The selected service is not available yet. Please try another service or contact support."
+        );
+      }
+
       const bookingData: BookingData = {
-        category_id: booking.category_id,
-        event_id: booking.event_id,
+        category_id: dbCategory.id,
+        event_id: dbEvent.id,
         requested_date: booking.requested_date,
         requested_time: booking.requested_time,
         client_notes: booking.client_notes ?? undefined,

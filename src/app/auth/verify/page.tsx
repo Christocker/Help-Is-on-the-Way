@@ -79,11 +79,20 @@ function ExpiredState({ email }: { email?: string }) {
         Verification link expired
       </h1>
       <p className="mt-3 text-sm leading-relaxed text-muted">
-        This verification link is no longer valid. Please request a new
+        This verification link is no longer valid. If you&apos;ve already
+        confirmed your email, try signing in. Otherwise, request a new
         verification email.
       </p>
       <div className="mt-8 border-t border-border pt-6 text-left">
         <ResendVerification email={email} />
+      </div>
+      <div className="mt-4">
+        <Link
+          href="/login"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface"
+        >
+          Try Signing In
+        </Link>
       </div>
     </div>
   );
@@ -98,14 +107,23 @@ function InvalidState({ email }: { email?: string }) {
         </svg>
       </div>
       <h1 className="mt-5 text-2xl font-bold text-foreground">
-        Invalid verification link
+        Verification link not recognized
       </h1>
       <p className="mt-3 text-sm leading-relaxed text-muted">
-        This verification link is not valid. Please request a new verification
-        email to activate your account.
+        This can happen if the link was already used (for example, when opened
+        from a mail app preview). Your email may already be confirmed — try
+        signing in. If not, request a new verification email.
       </p>
       <div className="mt-8 border-t border-border pt-6 text-left">
         <ResendVerification email={email} />
+      </div>
+      <div className="mt-4">
+        <Link
+          href="/login"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface"
+        >
+          Try Signing In
+        </Link>
       </div>
     </div>
   );

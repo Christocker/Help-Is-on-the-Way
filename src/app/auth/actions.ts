@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { normalizePhoneNumber } from "@/lib/utils";
 
 function isSupabaseConfigured(): boolean {
   return Boolean(
@@ -36,7 +37,7 @@ export async function resendVerificationEmail(email: string) {
     type: "signup",
     email,
     options: {
-      emailRedirectTo: `${siteUrl()}/auth/callback`,
+      emailRedirectTo: `${siteUrl()}/auth/callback?email=${encodeURIComponent(email)}`,
     },
   });
 
@@ -59,7 +60,9 @@ export async function signUp(formData: FormData) {
   const first_name = formData.get("first_name") as string;
   const middle_name = formData.get("middle_name") as string;
   const last_name = formData.get("last_name") as string;
-  const contact_number = formData.get("contact_number") as string;
+  const contact_number = normalizePhoneNumber(
+    (formData.get("contact_number") as string) ?? ""
+  );
 
   const full_name = [first_name.trim(), middle_name?.trim(), last_name.trim()]
     .filter(Boolean)
@@ -77,7 +80,7 @@ export async function signUp(formData: FormData) {
         contact_number: contact_number || null,
         role: "client",
       },
-      emailRedirectTo: `${siteUrl()}/auth/callback`,
+      emailRedirectTo: `${siteUrl()}/auth/callback?email=${encodeURIComponent(email)}`,
     },
   });
 

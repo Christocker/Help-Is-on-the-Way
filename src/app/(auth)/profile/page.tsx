@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Spinner } from "@/components/ui/Loading";
 import { createClient } from "@/lib/supabase/client";
-import { formatDate } from "@/lib/utils";
+import { formatDate, normalizePhoneNumber, isValidPhilippineMobile } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
 
 export default function ProfilePage() {
@@ -67,6 +67,15 @@ export default function ProfilePage() {
       return;
     }
 
+    const normalizedPhone = normalizePhoneNumber(contactNumber);
+    if (contactNumber.trim() && !isValidPhilippineMobile(normalizedPhone)) {
+      setError(
+        "Please enter a valid Philippine mobile number, e.g. +63 917 123 4567 or 09171234567."
+      );
+      setSaving(false);
+      return;
+    }
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -81,7 +90,7 @@ export default function ProfilePage() {
       .from("profiles")
       .update({
         full_name: fullName.trim(),
-        contact_number: contactNumber.trim() || null,
+        contact_number: normalizedPhone || null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", user.id);
@@ -90,12 +99,13 @@ export default function ProfilePage() {
       setError(updateError.message);
     } else {
       setSuccessMessage("Profile updated successfully.");
+      setContactNumber(normalizedPhone);
       setProfile((prev) =>
         prev
           ? {
               ...prev,
               full_name: fullName.trim(),
-              contact_number: contactNumber.trim() || null,
+              contact_number: normalizedPhone || null,
             }
           : prev
       );
@@ -168,9 +178,12 @@ export default function ProfilePage() {
           <Input
             id="contactNumber"
             label="Contact Number"
+            type="text"
+            inputMode="tel"
             value={contactNumber}
             onChange={(e) => setContactNumber(e.target.value)}
-            placeholder="+63 9XX XXX XXXX"
+            placeholder="+63 917 123 4567"
+            hint="Enter your Philippine mobile number, e.g. +63 917 123 4567 or 09171234567."
           />
 
           <div className="flex items-center justify-between pt-2">
