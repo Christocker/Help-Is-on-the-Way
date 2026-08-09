@@ -3,6 +3,7 @@
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { PhoneInput } from "@/components/ui/PhoneInput";
+import { capitalizeName } from "@/lib/utils";
 import { useState, FormEvent } from "react";
 
 interface SignUpFormProps {
@@ -23,6 +24,15 @@ export function SignUpForm({ action }: SignUpFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [contactNumber, setContactNumber] = useState("+63");
+  const [firstName, setFirstName] = useState("");
+  const [middleName, setMiddleName] = useState("");
+  const [lastName, setLastName] = useState("");
+
+  function handleNameChange(setter: (v: string) => void) {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      setter(capitalizeName(e.target.value));
+    };
+  }
 
   function validate(form: HTMLFormElement): boolean {
     const newErrors: FieldErrors = {};
@@ -82,6 +92,8 @@ export function SignUpForm({ action }: SignUpFormProps) {
           placeholder="Juan"
           required
           autoComplete="given-name"
+          value={firstName}
+          onChange={handleNameChange(setFirstName)}
           error={errors.first_name}
         />
 
@@ -92,6 +104,8 @@ export function SignUpForm({ action }: SignUpFormProps) {
           label="Middle Name"
           placeholder="Dela Cruz (optional)"
           autoComplete="additional-name"
+          value={middleName}
+          onChange={handleNameChange(setMiddleName)}
         />
       </div>
 
@@ -103,6 +117,8 @@ export function SignUpForm({ action }: SignUpFormProps) {
         placeholder="Santos"
         required
         autoComplete="family-name"
+        value={lastName}
+        onChange={handleNameChange(setLastName)}
         error={errors.last_name}
       />
 

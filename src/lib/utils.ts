@@ -59,3 +59,16 @@ export function isValidPhilippineMobile(phone: string): boolean {
     (digits.length === 13 && digits.startsWith("63"))
   );
 }
+
+// Title-cases a name: every word gets a capitalized first letter.
+// e.g. "jUAN dELA CRUZ" -> "Juan Dela Cruz"
+export function capitalizeName(input: string): string {
+  return input
+    .trim()
+    .split(/\s+/)
+    .map((word) => {
+      if (!word) return word;
+      return word[0].toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(" ");
+}

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import { Spinner } from "@/components/ui/Loading";
 import { createClient } from "@/lib/supabase/client";
-import { formatDate, normalizePhoneNumber, isValidPhilippineMobile } from "@/lib/utils";
+import { formatDate, normalizePhoneNumber, isValidPhilippineMobile, capitalizeName } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
 
 export default function ProfilePage() {
@@ -62,7 +62,9 @@ export default function ProfilePage() {
     setError(null);
     setSuccessMessage(null);
 
-    if (!fullName.trim()) {
+    const capitalizedFullName = capitalizeName(fullName);
+
+    if (!capitalizedFullName) {
       setError("Full name is required.");
       setSaving(false);
       return;
@@ -91,7 +93,7 @@ export default function ProfilePage() {
     const { error: updateError } = await supabase
       .from("profiles")
       .update({
-        full_name: fullName.trim(),
+        full_name: capitalizedFullName,
         contact_number: normalizedPhone || null,
         updated_at: new Date().toISOString(),
       })
@@ -101,12 +103,13 @@ export default function ProfilePage() {
       setError(updateError.message);
     } else {
       setSuccessMessage("Profile updated successfully.");
+      setFullName(capitalizedFullName);
       setContactNumber(normalizedPhone);
       setProfile((prev) =>
         prev
           ? {
               ...prev,
-              full_name: fullName.trim(),
+              full_name: capitalizedFullName,
               contact_number: normalizedPhone || null,
             }
           : prev
