@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { notifyAppointmentStatus } from "@/app/admin/actions";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -116,6 +117,23 @@ export default function AdminAppointmentsPage() {
         )
       );
       setSaveMessage({ type: "success", text: "Status updated successfully" });
+
+      // Notify the client by email about the status change.
+      const notify = await notifyAppointmentStatus({
+        appointmentId: selectedAppointment.id,
+        status: newStatus,
+      });
+      if (notify.ok) {
+        setSaveMessage({
+          type: "success",
+          text: "Status updated and the client has been notified by email.",
+        });
+      } else {
+        setSaveMessage({
+          type: "error",
+          text: `Status updated, but the email could not be sent: ${notify.error ?? "unknown error"}`,
+        });
+      }
     } catch (err) {
       setSaveMessage({
         type: "error",
