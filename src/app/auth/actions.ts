@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
+import { createClient as createBrowserSdk } from "@supabase/supabase-js";
 import { normalizePhoneNumber } from "@/lib/utils";
 
 function isSupabaseConfigured(): boolean {
@@ -114,13 +115,17 @@ export async function signUp(formData: FormData) {
 
   // Ensure the profile row has the correct contact number (and name).
   // The auth trigger creates the profile, but on some projects it may be
-  // stale; update it directly via the service client (bypasses RLS).
+  // stale; update it directly via the service-role SDK (bypasses RLS).
   if (signUpData?.user?.id) {
     try {
-      const service = await createServiceClient();
-      await service
-        .from("profiles")
-        .upsert(
+      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (serviceKey) {
+        const service = createBrowserSdk(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          serviceKey,
+          { auth: { persistSession: false } }
+        );
+        const { error: upsertError } = await service.from("profiles").upsert(
           {
             id: signUpData.user.id,
             full_name,
@@ -130,6 +135,10 @@ export async function signUp(formData: FormData) {
           },
           { onConflict: "id" }
         );
+        if (upsertError) {
+          console.error("Profile upsert after signup failed:", upsertError.message);
+        }
+      }
     } catch (profileErr) {
       // Non-fatal: the trigger may have handled it. Log for debugging.
       console.error("Profile upsert after signup failed:", profileErr);
