@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { resendVerificationEmail } from "@/app/auth/actions";
 import { Button } from "@/components/ui/Button";
 
@@ -16,6 +17,7 @@ export function ResendVerification({
     "idle"
   );
   const [message, setMessage] = useState("");
+  const [alreadyVerified, setAlreadyVerified] = useState(false);
   const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => {
@@ -33,6 +35,7 @@ export function ResendVerification({
     }
     setStatus("sending");
     setMessage("");
+    setAlreadyVerified(false);
     const result = await resendVerificationEmail(trimmed);
     if (result.ok) {
       setStatus("sent");
@@ -41,6 +44,12 @@ export function ResendVerification({
     } else {
       setStatus("error");
       setMessage(result.error ?? "Could not resend the email. Please try again.");
+      if (result.code === "already_verified") {
+        setAlreadyVerified(true);
+      }
+      if (result.retryAfter) {
+        setCooldown(Math.min(result.retryAfter, COOLDOWN_SECONDS));
+      }
     }
   }
 
@@ -91,12 +100,17 @@ export function ResendVerification({
       )}
 
       {status === "error" && (
-        <p
-          className="rounded-lg bg-destructive-light border border-red-200 px-4 py-3 text-sm text-destructive"
-          role="alert"
-        >
-          {message}
-        </p>
+        <div className="rounded-lg bg-destructive-light border border-red-200 px-4 py-3 text-sm text-destructive" role="alert">
+          <p>{message}</p>
+          {alreadyVerified && (
+            <Link
+              href="/login"
+              className="mt-2 inline-block font-semibold text-primary hover:text-primary-dark transition-colors"
+            >
+              Go to Sign In
+            </Link>
+          )}
+        </div>
       )}
     </div>
   );

@@ -37,11 +37,33 @@ export async function resendVerificationEmail(email: string) {
     type: "signup",
     email,
     options: {
-      emailRedirectTo: `${siteUrl()}/auth/callback?email=${encodeURIComponent(email)}`,
+      emailRedirectTo: `${siteUrl()}/auth/callback`,
     },
   });
 
   if (error) {
+    const msg = error.message.toLowerCase();
+
+    // The account is already verified — nothing to resend.
+    if (msg.includes("already") || msg.includes("verified")) {
+      return {
+        ok: false as const,
+        error: "Your email is already verified. You can sign in now.",
+        code: "already_verified" as const,
+      };
+    }
+
+    // Rate-limited by the auth provider. Report a friendly wait time.
+    const waitMatch = msg.match(/after\s+(\d+)\s*seconds?/);
+    if (waitMatch) {
+      return {
+        ok: false as const,
+        error: `Please wait ${waitMatch[1]} seconds before requesting another email.`,
+        code: "rate_limited" as const,
+        retryAfter: parseInt(waitMatch[1], 10),
+      };
+    }
+
     return { ok: false as const, error: error.message };
   }
 
@@ -82,7 +104,7 @@ export async function signUp(formData: FormData) {
         contact_number: contact_number || null,
         role: "client",
       },
-      emailRedirectTo: `${siteUrl()}/auth/callback?email=${encodeURIComponent(email)}`,
+      emailRedirectTo: `${siteUrl()}/auth/callback`,
     },
   });
 
