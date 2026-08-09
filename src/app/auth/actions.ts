@@ -61,7 +61,9 @@ export async function signUp(formData: FormData) {
   const middle_name = formData.get("middle_name") as string;
   const last_name = formData.get("last_name") as string;
   const contact_number = normalizePhoneNumber(
-    (formData.get("contact_number") as string) ?? ""
+    (formData.get("contact_number_full") as string) ||
+      (formData.get("contact_number") as string) ||
+      ""
   );
 
   const full_name = [first_name.trim(), middle_name?.trim(), last_name.trim()]

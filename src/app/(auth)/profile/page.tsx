@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import { Spinner } from "@/components/ui/Loading";
 import { createClient } from "@/lib/supabase/client";
 import { formatDate, normalizePhoneNumber, isValidPhilippineMobile } from "@/lib/utils";
@@ -68,9 +69,10 @@ export default function ProfilePage() {
     }
 
     const normalizedPhone = normalizePhoneNumber(contactNumber);
-    if (contactNumber.trim() && !isValidPhilippineMobile(normalizedPhone)) {
+    const hasNumber = normalizedPhone.replace(/\D/g, "").length > 2; // more than just "+63"
+    if (hasNumber && !isValidPhilippineMobile(normalizedPhone)) {
       setError(
-        "Please enter a valid Philippine mobile number, e.g. +63 917 123 4567 or 09171234567."
+        "Please enter a valid Philippine mobile number, e.g. +63 917 123 4567."
       );
       setSaving(false);
       return;
@@ -175,15 +177,12 @@ export default function ProfilePage() {
             className="bg-gray-50"
           />
 
-          <Input
+          <PhoneInput
             id="contactNumber"
             label="Contact Number"
-            type="text"
-            inputMode="tel"
             value={contactNumber}
-            onChange={(e) => setContactNumber(e.target.value)}
-            placeholder="+63 917 123 4567"
-            hint="Enter your Philippine mobile number, e.g. +63 917 123 4567 or 09171234567."
+            onChange={setContactNumber}
+            hint="Your Philippine mobile number. The +63 country code is added automatically."
           />
 
           <div className="flex items-center justify-between pt-2">

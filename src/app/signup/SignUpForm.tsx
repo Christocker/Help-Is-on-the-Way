@@ -2,6 +2,7 @@
 
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import { useState, FormEvent } from "react";
 
 interface SignUpFormProps {
@@ -21,6 +22,7 @@ export function SignUpForm({ action }: SignUpFormProps) {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [contactNumber, setContactNumber] = useState("+63");
 
   function validate(form: HTMLFormElement): boolean {
     const newErrors: FieldErrors = {};
@@ -116,16 +118,15 @@ export function SignUpForm({ action }: SignUpFormProps) {
         hint="We'll send a confirmation link to this address."
       />
 
-      <Input
+      <PhoneInput
         id="contact_number"
         name="contact_number"
-        type="text"
-        inputMode="tel"
         label="Contact Number"
-        placeholder="+63 917 123 4567"
-        autoComplete="tel"
-        hint="Your Philippine mobile number, e.g. +63 917 123 4567 or 09171234567. Optional."
+        value={contactNumber}
+        onChange={setContactNumber}
+        hint="Your Philippine mobile number. The +63 country code is added automatically. Optional."
       />
+      <input type="hidden" name="contact_number_full" value={contactNumber} />
 
       <div className="w-full">
         <label
