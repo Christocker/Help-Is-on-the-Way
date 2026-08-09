@@ -346,8 +346,33 @@ export default function AdminCategoriesPage() {
                       imageUrl={cat.image_url}
                       alt={`${cat.name} photo`}
                       size="md"
-                      onUpload={(file) => uploadCategoryImage(cat.id, file)}
-                      onDelete={() => deleteCategoryImage(cat.id, cat.image_url)}
+                      onUpload={async (file) => {
+                        const result = await uploadCategoryImage(cat.id, file);
+                        if (result.ok && result.url) {
+                          setCategories((prev) =>
+                            prev.map((c) =>
+                              c.id === cat.id
+                                ? { ...c, image_url: result.url ?? null }
+                                : c
+                            )
+                          );
+                        }
+                        return result;
+                      }}
+                      onDelete={async () => {
+                        const result = await deleteCategoryImage(
+                          cat.id,
+                          cat.image_url
+                        );
+                        if (result.ok) {
+                          setCategories((prev) =>
+                            prev.map((c) =>
+                              c.id === cat.id ? { ...c, image_url: null } : c
+                            )
+                          );
+                        }
+                        return result;
+                      }}
                     />
                     <div className="grid gap-3 sm:grid-cols-2">
                       <Input

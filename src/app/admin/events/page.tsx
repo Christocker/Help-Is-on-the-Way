@@ -417,12 +417,44 @@ export default function AdminEventsPage() {
                             imageUrl={event.image_url}
                             alt={`${event.name} photo`}
                             size="sm"
-                            onUpload={(file) =>
-                              uploadEventImage(event.id, file)
-                            }
-                            onDelete={() =>
-                              deleteEventImage(event.id, event.image_url)
-                            }
+                            onUpload={async (file) => {
+                              const result = await uploadEventImage(
+                                event.id,
+                                file
+                              );
+                              if (result.ok && result.url) {
+                                setGrouped((prev) =>
+                                  prev.map((cat) => ({
+                                    ...cat,
+                                    events: cat.events.map((e) =>
+                                      e.id === event.id
+                                        ? { ...e, image_url: result.url ?? null }
+                                        : e
+                                    ),
+                                  }))
+                                );
+                              }
+                              return result;
+                            }}
+                            onDelete={async () => {
+                              const result = await deleteEventImage(
+                                event.id,
+                                event.image_url
+                              );
+                              if (result.ok) {
+                                setGrouped((prev) =>
+                                  prev.map((cat) => ({
+                                    ...cat,
+                                    events: cat.events.map((e) =>
+                                      e.id === event.id
+                                        ? { ...e, image_url: null }
+                                        : e
+                                    ),
+                                  }))
+                                );
+                              }
+                              return result;
+                            }}
                           />
                           <div className="grid gap-3 sm:grid-cols-2">
                             <Input
