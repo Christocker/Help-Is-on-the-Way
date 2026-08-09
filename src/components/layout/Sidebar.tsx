@@ -115,7 +115,8 @@ export function Sidebar({ user, unreadNotifications = 0, isAdmin = false }: Side
                   href={item.href}
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                    isActive && "bg-white/15 border-l-3 border-l-white",
+                    isActive &&
+                      "bg-white/15 border-l-2 border-l-primary-light max-lg:border-l-0",
                     !isActive && "hover:bg-white/10 text-white/80 hover:text-white",
                     item.highlighted &&
                       "border border-white/20 bg-white/10 hover:bg-white/20 text-white"
