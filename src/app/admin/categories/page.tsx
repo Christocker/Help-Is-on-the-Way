@@ -10,6 +10,7 @@ import { Spinner } from "@/components/ui/Loading";
 import { Category } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { AdminPhotoUploader } from "@/components/admin/AdminPhotoUploader";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import {
   uploadCategoryImage,
   deleteCategoryImage,
@@ -36,6 +37,9 @@ export default function AdminCategoriesPage() {
   });
   const [addPhoto, setAddPhoto] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deletingCategory, setDeletingCategory] = useState<Category | null>(
+    null
+  );
 
   const rowRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
   const firstPositions = useRef<Map<string, number>>(new Map());
@@ -165,6 +169,40 @@ export default function AdminCategoriesPage() {
     }
   }
 
+  async function handleDeleteCategory(category: Category) {
+    setSaving(true);
+    setMessage(null);
+    try {
+      const supabase = createClient();
+      const { error: deleteError } = await supabase
+        .from("categories")
+        .delete()
+        .eq("id", category.id);
+
+      if (deleteError) {
+        setMessage({
+          type: "error",
+          text:
+            "Could not delete this category. It may have appointments linked to it: " +
+            (deleteError.message || "unknown error"),
+        });
+        return;
+      }
+
+      setCategories((prev) => prev.filter((c) => c.id !== category.id));
+      setMessage({ type: "success", text: "Category deleted successfully" });
+    } catch (err) {
+      setMessage({
+        type: "error",
+        text:
+          err instanceof Error ? err.message : "Failed to delete category",
+      });
+    } finally {
+      setSaving(false);
+      setDeletingCategory(null);
+    }
+  }
+
   function startEdit(category: Category) {
     setEditingId(category.id);
     setEditForm({
@@ -172,7 +210,6 @@ export default function AdminCategoriesPage() {
       description: category.description,
     });
   }
-
   function cancelEdit() {
     setEditingId(null);
   }
@@ -570,6 +607,13 @@ export default function AdminCategoriesPage() {
                       >
                         {cat.is_active ? "Deactivate" : "Activate"}
                       </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setDeletingCategory(cat)}
+                      >
+                        Delete
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -578,6 +622,29 @@ export default function AdminCategoriesPage() {
           </div>
         </Card>
       )}
+
+      <ConfirmDialog
+        open={deletingCategory !== null}
+        title="Delete category?"
+        description={
+          <p>
+            This will permanently delete{" "}
+            <span className="font-semibold text-foreground">
+              {deletingCategory?.name}
+            </span>{" "}
+            and <span className="font-semibold text-foreground">all events</span>{" "}
+            under it. This action cannot be undone.
+          </p>
+        }
+        confirmLabel="Delete Category"
+        requireText={deletingCategory?.name ?? ""}
+        placeholder="Type the category name"
+        loading={saving}
+        onConfirm={() => {
+          if (deletingCategory) handleDeleteCategory(deletingCategory);
+        }}
+        onCancel={() => setDeletingCategory(null)}
+      />
     </div>
   );
 }

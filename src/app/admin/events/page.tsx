@@ -10,6 +10,7 @@ import { Spinner } from "@/components/ui/Loading";
 import { Event, Category } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { AdminPhotoUploader } from "@/components/admin/AdminPhotoUploader";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import {
   uploadEventImage,
   deleteEventImage,
@@ -42,6 +43,7 @@ export default function AdminEventsPage() {
     duration: "",
   });
   const [saving, setSaving] = useState(false);
+  const [deletingEvent, setDeletingEvent] = useState<Event | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -124,6 +126,44 @@ export default function AdminEventsPage() {
 
   function cancelEdit() {
     setEditingId(null);
+  }
+
+  async function handleDeleteEvent(event: Event) {
+    setSaving(true);
+    setMessage(null);
+    try {
+      const supabase = createClient();
+      const { error: deleteError } = await supabase
+        .from("events")
+        .delete()
+        .eq("id", event.id);
+
+      if (deleteError) {
+        setMessage({
+          type: "error",
+          text:
+            "Could not delete this event. It may have appointments linked to it: " +
+            (deleteError.message || "unknown error"),
+        });
+        return;
+      }
+
+      setGrouped((prev) =>
+        prev.map((cat) => ({
+          ...cat,
+          events: cat.events.filter((e) => e.id !== event.id),
+        }))
+      );
+      setMessage({ type: "success", text: "Event deleted successfully" });
+    } catch (err) {
+      setMessage({
+        type: "error",
+        text: err instanceof Error ? err.message : "Failed to delete event",
+      });
+    } finally {
+      setSaving(false);
+      setDeletingEvent(null);
+    }
   }
 
   // Returns a valid duration number (minutes), 0/empty => null (N/A),
@@ -592,6 +632,13 @@ export default function AdminEventsPage() {
                             >
                               {event.is_active ? "Deactivate" : "Activate"}
                             </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => setDeletingEvent(event)}
+                            >
+                              Delete
+                            </Button>
                           </div>
                         </div>
                       )}
@@ -603,6 +650,26 @@ export default function AdminEventsPage() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={deletingEvent !== null}
+        title="Delete event?"
+        description={
+          <p>
+            This will permanently delete{" "}
+            <span className="font-semibold text-foreground">
+              {deletingEvent?.name}
+            </span>
+            . This action cannot be undone.
+          </p>
+        }
+        confirmLabel="Delete Event"
+        loading={saving}
+        onConfirm={() => {
+          if (deletingEvent) handleDeleteEvent(deletingEvent);
+        }}
+        onCancel={() => setDeletingEvent(null)}
+      />
     </div>
   );
 }
