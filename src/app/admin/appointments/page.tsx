@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { notifyAppointmentStatus } from "@/app/admin/actions";
+import { notifyAppointmentStatus, deleteAppointment, updateAppointment } from "@/app/admin/actions";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -124,8 +124,6 @@ export default function AdminAppointmentsPage() {
     )?.value;
 
     try {
-      const supabase = createClient();
-
       const updatePayload: Record<string, unknown> = {
         status: newStatus,
         admin_notes: adminNotes || null,
@@ -146,12 +144,11 @@ export default function AdminAppointmentsPage() {
         updatePayload.requested_time = rescheduleTime;
       }
 
-      const { error: updateError } = await supabase
-        .from("appointments")
-        .update(updatePayload)
-        .eq("id", selectedAppointment.id);
+      const result = await updateAppointment(selectedAppointment.id, updatePayload);
 
-      if (updateError) throw updateError;
+      if (!result.ok) {
+        throw new Error(result.error ?? "Unknown error");
+      }
 
       const updated: AppointmentWithDetails = {
         ...selectedAppointment,
@@ -206,18 +203,14 @@ export default function AdminAppointmentsPage() {
     setSaving(true);
     setSaveMessage(null);
     try {
-      const supabase = createClient();
-      const { error: deleteError } = await supabase
-        .from("appointments")
-        .delete()
-        .eq("id", appointment.id);
+      const result = await deleteAppointment(appointment.id);
 
-      if (deleteError) {
+      if (!result.ok) {
         setSaveMessage({
           type: "error",
           text:
             "Could not delete this appointment: " +
-            (deleteError.message || "unknown error"),
+            (result.error ?? "unknown error"),
         });
         return;
       }
