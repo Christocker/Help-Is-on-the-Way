@@ -38,7 +38,7 @@ export async function resendVerificationEmail(email: string) {
     type: "signup",
     email,
     options: {
-      emailRedirectTo: `${siteUrl()}/auth/callback`,
+      emailRedirectTo: `${siteUrl()}/auth/callback?email=${encodeURIComponent(email)}`,
     },
   });
 
@@ -105,7 +105,7 @@ export async function signUp(formData: FormData) {
         contact_number: contact_number || null,
         role: "client",
       },
-      emailRedirectTo: `${siteUrl()}/auth/callback`,
+      emailRedirectTo: `${siteUrl()}/auth/callback?email=${encodeURIComponent(email)}`,
     },
   });
 

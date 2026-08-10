@@ -1,5 +1,23 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminSdk } from "@supabase/supabase-js";
+
+async function emailIsConfirmed(email: string | null): Promise<boolean> {
+  if (!email) return false;
+  try {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!url || !key) return false;
+    const admin = createAdminSdk(url, key, { auth: { persistSession: false } });
+    const { data } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    const user = data?.users?.find(
+      (u) => u.email?.toLowerCase() === email.toLowerCase()
+    );
+    return Boolean(user?.email_confirmed_at);
+  } catch {
+    return false;
+  }
+}
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -19,6 +37,13 @@ export async function GET(request: Request) {
       error_code === "otp_expired" ||
       error_description.toLowerCase().includes("expired");
 
+    // If the error is a "not recognized / already used" code but the email is
+    // actually confirmed (e.g. the link was processed by a mail-app preview),
+    // treat it as a successful verification instead of a dead-end.
+    if (!isExpired && (await emailIsConfirmed(email))) {
+      return NextResponse.redirect(`${origin}/auth/confirm`);
+    }
+
     const dest = new URL(origin);
     dest.pathname = "/auth/verify";
     if (email) dest.searchParams.set("email", email);
@@ -34,6 +59,9 @@ export async function GET(request: Request) {
     });
 
     if (error) {
+      if (await emailIsConfirmed(email)) {
+        return NextResponse.redirect(`${origin}/auth/confirm`);
+      }
       const dest = new URL(origin);
       dest.pathname = "/auth/verify";
       if (email) dest.searchParams.set("email", email);
@@ -52,6 +80,13 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
+      // The code may have been consumed already (e.g. by a mail-app preview or
+      // opened in a different browser without the PKCE verifier cookie), while
+      // the email itself was confirmed by the auth provider. Let the user
+      // through if the account is genuinely verified.
+      if (await emailIsConfirmed(email)) {
+        return NextResponse.redirect(`${origin}/auth/confirm`);
+      }
       const dest = new URL(origin);
       dest.pathname = "/auth/verify";
       if (email) dest.searchParams.set("email", email);
@@ -66,7 +101,12 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/auth/confirm`);
   }
 
-  // No recognizable token → invalid state
+  // No recognizable token → check if the account is confirmed anyway.
+  if (await emailIsConfirmed(email)) {
+    return NextResponse.redirect(`${origin}/auth/confirm`);
+  }
+
+  // Otherwise invalid state
   const dest = new URL(origin);
   dest.pathname = "/auth/verify";
   if (email) dest.searchParams.set("email", email);
