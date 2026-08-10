@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 
 interface ConfirmDialogProps {
@@ -29,6 +29,11 @@ export function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   const [typed, setTyped] = useState("");
+
+  // Reset the typed confirmation text every time the dialog opens.
+  useEffect(() => {
+    if (open) setTyped("");
+  }, [open]);
 
   if (!open) return null;
 
