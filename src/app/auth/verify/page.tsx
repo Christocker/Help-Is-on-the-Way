@@ -79,20 +79,23 @@ function ExpiredState({ email }: { email?: string }) {
         Verification link expired
       </h1>
       <p className="mt-3 text-sm leading-relaxed text-muted">
-        This verification link is no longer valid. If you&apos;ve already
-        confirmed your email, try signing in. Otherwise, request a new
-        verification email.
+        This link is no longer valid — but your account may already be
+        confirmed. Try signing in first; if that doesn&apos;t work, request a
+        new verification email.
       </p>
-      <div className="mt-8 border-t border-border pt-6 text-left">
-        <ResendVerification email={email} />
-      </div>
-      <div className="mt-4">
+      <div className="mt-8">
         <Link
           href="/login"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-all duration-200 hover:bg-primary-dark"
         >
           Try Signing In
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+          </svg>
         </Link>
+      </div>
+      <div className="mt-4 border-t border-border pt-4 text-left">
+        <ResendVerification email={email} />
       </div>
     </div>
   );
@@ -110,20 +113,23 @@ function InvalidState({ email }: { email?: string }) {
         Verification link not recognized
       </h1>
       <p className="mt-3 text-sm leading-relaxed text-muted">
-        This can happen if the link was already used (for example, when opened
-        from a mail app preview). Your email may already be confirmed — try
-        signing in. If not, request a new verification email.
+        This usually happens when the link was already used (for example,
+        by your email app). Your account is likely already confirmed — try
+        signing in. If not, request a new verification email below.
       </p>
-      <div className="mt-8 border-t border-border pt-6 text-left">
-        <ResendVerification email={email} />
-      </div>
-      <div className="mt-4">
+      <div className="mt-8">
         <Link
           href="/login"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary/20 transition-all duration-200 hover:bg-primary-dark"
         >
           Try Signing In
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+          </svg>
         </Link>
+      </div>
+      <div className="mt-4 border-t border-border pt-4 text-left">
+        <ResendVerification email={email} />
       </div>
     </div>
   );
