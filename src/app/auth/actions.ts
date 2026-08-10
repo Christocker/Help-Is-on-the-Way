@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createBrowserSdk } from "@supabase/supabase-js";
-import { normalizePhoneNumber, capitalizeName } from "@/lib/utils";
+import { normalizePhoneNumber, uppercaseName } from "@/lib/utils";
 
 function isSupabaseConfigured(): boolean {
   return Boolean(
@@ -80,9 +80,9 @@ export async function signUp(formData: FormData) {
 
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
-  const first_name = capitalizeName(formData.get("first_name") as string);
-  const middle_name = capitalizeName(formData.get("middle_name") as string);
-  const last_name = capitalizeName(formData.get("last_name") as string);
+  const first_name = uppercaseName(formData.get("first_name") as string);
+  const middle_name = uppercaseName(formData.get("middle_name") as string);
+  const last_name = uppercaseName(formData.get("last_name") as string);
   const contact_number = normalizePhoneNumber(
     (formData.get("contact_number_full") as string) ||
       (formData.get("contact_number") as string) ||

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/Card";
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import { Spinner } from "@/components/ui/Loading";
 import { createClient } from "@/lib/supabase/client";
-import { formatDate, normalizePhoneNumber, isValidPhilippineMobile, capitalizeName } from "@/lib/utils";
+import { formatDate, normalizePhoneNumber, isValidPhilippineMobile, uppercaseName } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
 
 export default function ProfilePage() {
@@ -62,7 +62,7 @@ export default function ProfilePage() {
     setError(null);
     setSuccessMessage(null);
 
-    const capitalizedFullName = capitalizeName(fullName);
+    const capitalizedFullName = uppercaseName(fullName);
 
     if (!capitalizedFullName) {
       setError("Full name is required.");

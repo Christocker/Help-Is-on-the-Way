@@ -3,7 +3,7 @@
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { PhoneInput } from "@/components/ui/PhoneInput";
-import { capitalizeName } from "@/lib/utils";
+import { capitalizeName, uppercaseName } from "@/lib/utils";
 import { useState, FormEvent } from "react";
 
 interface SignUpFormProps {
@@ -30,7 +30,7 @@ export function SignUpForm({ action }: SignUpFormProps) {
 
   function handleNameChange(setter: (v: string) => void) {
     return (e: React.ChangeEvent<HTMLInputElement>) => {
-      setter(capitalizeName(e.target.value));
+      setter(uppercaseName(e.target.value));
     };
   }
 
