@@ -73,8 +73,9 @@ export function capitalizeName(input: string): string {
     .join(" ");
 }
 
-// Uppercases an entire name (ALL CAPS), preserving spaces between words.
-// e.g. "chris bern de la salle" -> "CHRIS BERN DE LA SALLE"
+// Uppercases an entire name (ALL CAPS), preserving single spaces between words.
+// Does NOT trim: while typing, the trailing space after a word is preserved.
+// e.g. "chris bern dela salle " -> "CHRIS BERN DELA SALLE "
 export function uppercaseName(input: string): string {
-  return input.replace(/\s+/g, " ").trim().toUpperCase();
+  return input.replace(/ +/g, " ").toUpperCase();
 }

@@ -101,8 +101,15 @@ export function SignUpForm({ action }: SignUpFormProps) {
           id="middle_name"
           name="middle_name"
           type="text"
-          label="Middle Name"
-          placeholder="Dela Cruz (optional)"
+          label={
+            <>
+              Middle Name
+              <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                Optional
+              </span>
+            </>
+          }
+          placeholder="Dela Cruz"
           autoComplete="additional-name"
           value={middleName}
           onChange={handleNameChange(setMiddleName)}
