@@ -31,7 +31,7 @@ export default function AdminEventsPage() {
   const [editForm, setEditForm] = useState({
     name: "",
     description: "",
-    duration: 60,
+    duration: "",
   });
   const [showAddForm, setShowAddForm] = useState(false);
   const [addForm, setAddForm] = useState({
@@ -39,7 +39,7 @@ export default function AdminEventsPage() {
     name: "",
     slug: "",
     description: "",
-    duration: 60,
+    duration: "",
   });
   const [saving, setSaving] = useState(false);
 
@@ -118,7 +118,7 @@ export default function AdminEventsPage() {
     setEditForm({
       name: event.name,
       description: event.description,
-      duration: event.duration ?? 60,
+      duration: event.duration != null ? String(event.duration) : "",
     });
   }
 
@@ -126,9 +126,29 @@ export default function AdminEventsPage() {
     setEditingId(null);
   }
 
+  // Returns a valid duration number (minutes), 0/empty => null (N/A),
+  // or an error string when the value isn't numeric.
+  function parseDuration(value: string): number | null | string {
+    const trimmed = value.trim();
+    if (trimmed === "") return null;
+    if (!/^\d+$/.test(trimmed)) {
+      return "Duration must be a number. Leave blank or enter 0 for N/A.";
+    }
+    const num = parseInt(trimmed, 10);
+    return num === 0 ? null : num;
+  }
+
   async function handleSaveEdit(eventId: string) {
     setSaving(true);
     setMessage(null);
+
+    const parsedDuration = parseDuration(editForm.duration);
+    if (typeof parsedDuration === "string") {
+      setMessage({ type: "error", text: parsedDuration });
+      setSaving(false);
+      return;
+    }
+
     try {
       const slug = editForm.name
         .toLowerCase()
@@ -141,7 +161,7 @@ export default function AdminEventsPage() {
           name: editForm.name,
           description: editForm.description,
           slug,
-          duration: editForm.duration,
+          duration: parsedDuration,
         })
         .eq("id", eventId);
 
@@ -157,7 +177,7 @@ export default function AdminEventsPage() {
                   name: editForm.name,
                   description: editForm.description,
                   slug,
-                  duration: editForm.duration,
+                  duration: parsedDuration,
                 }
               : e
           ),
@@ -179,6 +199,14 @@ export default function AdminEventsPage() {
     e.preventDefault();
     setSaving(true);
     setMessage(null);
+
+    const parsedDuration = parseDuration(addForm.duration);
+    if (typeof parsedDuration === "string") {
+      setMessage({ type: "error", text: parsedDuration });
+      setSaving(false);
+      return;
+    }
+
     try {
       const slug =
         addForm.slug ||
@@ -192,7 +220,7 @@ export default function AdminEventsPage() {
         name: addForm.name,
         slug,
         description: addForm.description,
-        duration: addForm.duration,
+        duration: parsedDuration,
         is_active: true,
       });
 
@@ -204,7 +232,7 @@ export default function AdminEventsPage() {
         name: "",
         slug: "",
         description: "",
-        duration: 60,
+        duration: "",
       });
       setMessage({ type: "success", text: "Event added successfully" });
       await fetchData();
@@ -345,13 +373,17 @@ export default function AdminEventsPage() {
             </div>
             <Input
               label="Duration (minutes)"
-              type="number"
-              min={15}
-              step={5}
+              type="text"
+              inputMode="numeric"
               value={addForm.duration}
               onChange={(e) =>
-                setAddForm({ ...addForm, duration: Number(e.target.value) })
+                setAddForm({
+                  ...addForm,
+                  duration: e.target.value.replace(/[^\d]/g, ""),
+                })
               }
+              placeholder="e.g. 60"
+              hint="In minutes. Enter 0 for N/A."
             />
             <Button type="submit" size="sm" isLoading={saving}>
               Create Event
@@ -469,16 +501,17 @@ export default function AdminEventsPage() {
                             />
                             <Input
                               label="Duration (minutes)"
-                              type="number"
-                              min={15}
-                              step={5}
+                              type="text"
+                              inputMode="numeric"
                               value={editForm.duration}
                               onChange={(e) =>
                                 setEditForm({
                                   ...editForm,
-                                  duration: Number(e.target.value),
+                                  duration: e.target.value.replace(/[^\d]/g, ""),
                                 })
                               }
+                              placeholder="e.g. 60"
+                              hint="In minutes. Enter 0 for N/A."
                             />
                           </div>
                           <div>
