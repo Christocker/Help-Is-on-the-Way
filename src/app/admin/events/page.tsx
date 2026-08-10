@@ -182,6 +182,23 @@ export default function AdminEventsPage() {
     setSaving(true);
     setMessage(null);
 
+    const allEvents = grouped.flatMap((g) => g.events);
+    const duplicate = allEvents.some(
+      (ev) =>
+        ev.id !== eventId &&
+        ev.category_id ===
+          allEvents.find((x) => x.id === eventId)?.category_id &&
+        ev.name.trim().toLowerCase() === editForm.name.trim().toLowerCase()
+    );
+    if (duplicate) {
+      setMessage({
+        type: "error",
+        text: `An event named "${editForm.name.trim()}" already exists in this category.`,
+      });
+      setSaving(false);
+      return;
+    }
+
     const parsedDuration = parseDuration(editForm.duration);
     if (typeof parsedDuration === "string") {
       setMessage({ type: "error", text: parsedDuration });
@@ -239,6 +256,21 @@ export default function AdminEventsPage() {
     e.preventDefault();
     setSaving(true);
     setMessage(null);
+
+    const allEvents = grouped.flatMap((g) => g.events);
+    const duplicate = allEvents.some(
+      (ev) =>
+        ev.category_id === addForm.category_id &&
+        ev.name.trim().toLowerCase() === addForm.name.trim().toLowerCase()
+    );
+    if (duplicate) {
+      setMessage({
+        type: "error",
+        text: `An event named "${addForm.name.trim()}" already exists in this category.`,
+      });
+      setSaving(false);
+      return;
+    }
 
     const parsedDuration = parseDuration(addForm.duration);
     if (typeof parsedDuration === "string") {

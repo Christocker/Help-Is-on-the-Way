@@ -38,7 +38,9 @@ export function ConfirmDialog({
   if (!open) return null;
 
   const requiresText = Boolean(requireText);
-  const canConfirm = !requiresText || typed.trim() === requireText;
+  const canConfirm =
+    !requiresText ||
+    typed.trim().toLowerCase() === (requireText ?? "").trim().toLowerCase();
 
   return (
     <div

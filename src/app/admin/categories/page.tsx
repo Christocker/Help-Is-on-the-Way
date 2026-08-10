@@ -217,6 +217,21 @@ export default function AdminCategoriesPage() {
   async function handleSaveEdit(categoryId: string) {
     setSaving(true);
     setMessage(null);
+
+    const duplicate = categories.some(
+      (c) =>
+        c.id !== categoryId &&
+        c.name.trim().toLowerCase() === editForm.name.trim().toLowerCase()
+    );
+    if (duplicate) {
+      setMessage({
+        type: "error",
+        text: `A category named "${editForm.name.trim()}" already exists.`,
+      });
+      setSaving(false);
+      return;
+    }
+
     try {
       const slug = editForm.name
         .toLowerCase()
@@ -262,6 +277,19 @@ export default function AdminCategoriesPage() {
     e.preventDefault();
     setSaving(true);
     setMessage(null);
+
+    const duplicate = categories.some(
+      (c) => c.name.trim().toLowerCase() === addForm.name.trim().toLowerCase()
+    );
+    if (duplicate) {
+      setMessage({
+        type: "error",
+        text: `A category named "${addForm.name.trim()}" already exists.`,
+      });
+      setSaving(false);
+      return;
+    }
+
     try {
       const slug =
         addForm.slug ||
