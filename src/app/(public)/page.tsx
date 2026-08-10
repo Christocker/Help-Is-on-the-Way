@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { PublicHero, HeroActions } from "@/components/layout/PublicHero";
-import { CATEGORIES } from "@/lib/data";
+import { fetchCategoriesFromDb } from "@/lib/data-server";
 
 export const metadata: Metadata = {
   title: "Help Is on the Way - Free Mental Healthcare Access",
@@ -116,7 +116,8 @@ const testimonials = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const categories = await fetchCategoriesFromDb();
   return (
     <>
       {/* Hero */}
@@ -157,7 +158,7 @@ export default function Home() {
           </div>
 
           <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {CATEGORIES.map((category, index) => (
+            {categories.map((category, index) => (
               <Link
                 key={category.id}
                 href="/signup"

@@ -1,25 +1,30 @@
 "use client";
 
-import { CATEGORIES } from "@/lib/data";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useState } from "react";
+import type { Category } from "@/lib/types";
 
 interface StepCategoryProps {
+  categories: Category[];
   selectedCategoryId: string | null;
   onSelect: (categoryId: string) => void;
 }
 
-export function StepCategory({ selectedCategoryId, onSelect }: StepCategoryProps) {
+export function StepCategory({
+  categories,
+  selectedCategoryId,
+  onSelect,
+}: StepCategoryProps) {
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
   const handleImageError = (categoryId: string) => {
     setImageErrors((prev) => new Set(prev).add(categoryId));
   };
 
-  const activeCategories = CATEGORIES.filter((c) => c.is_active);
+  const activeCategories = categories.filter((c) => c.is_active);
 
   if (activeCategories.length === 0) {
     return (

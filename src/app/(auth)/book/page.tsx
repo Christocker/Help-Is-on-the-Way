@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ProgressIndicator } from "./_components/ProgressIndicator";
@@ -9,8 +9,8 @@ import { StepEvent } from "./_components/StepEvent";
 import { StepDateTime } from "./_components/StepDateTime";
 import { StepReview } from "./_components/StepReview";
 import { Button } from "@/components/ui/Button";
-import { getCategoryById, getEventById } from "@/lib/data";
-import { BookingData } from "@/lib/types";
+import { Spinner } from "@/components/ui/Loading";
+import { BookingData, Category, Event } from "@/lib/types";
 
 type BookingState = {
   category_id: string | null;
@@ -35,6 +35,53 @@ export default function BookPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const supabase = createClient();
+        const [{ data: cats }, { data: evts }] = await Promise.all([
+          supabase
+            .from("categories")
+            .select("*")
+            .eq("is_active", true)
+            .order("sort_order", { ascending: true })
+            .returns<Category[]>(),
+          supabase
+            .from("events")
+            .select("*")
+            .eq("is_active", true)
+            .order("name", { ascending: true })
+            .returns<Event[]>(),
+        ]);
+        if (!cancelled) {
+          setCategories(cats ?? []);
+          setEvents(evts ?? []);
+        }
+      } catch {
+        // leave lists empty; UI will show empty state
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const selectedCategory = categories.find(
+    (c) => c.id === booking.category_id
+  );
+  const selectedEvent = events.find((e) => e.id === booking.event_id);
+  const categoryEvents = events.filter(
+    (e) => e.category_id === booking.category_id
+  );
 
   const completedSteps = (() => {
     const completed: number[] = [];
@@ -131,38 +178,9 @@ export default function BookPage() {
         throw new Error("You must be logged in to book an appointment.");
       }
 
-      // The booking UI uses friendly ids ("cat-1", "evt-1a"); the database
-      // stores real UUIDs in the categories/events tables. Resolve them here
-      // so the appointment references valid rows.
-      const staticCategory = getCategoryById(booking.category_id);
-      const staticEvent = getEventById(booking.event_id);
-
-      if (!staticCategory?.slug || !staticEvent?.slug) {
-        throw new Error("Selected service could not be found. Please try again.");
-      }
-
-      const [{ data: dbCategory }, { data: dbEvent }] = await Promise.all([
-        supabase
-          .from("categories")
-          .select("id")
-          .eq("slug", staticCategory.slug)
-          .single(),
-        supabase
-          .from("events")
-          .select("id")
-          .eq("slug", staticEvent.slug)
-          .single(),
-      ]);
-
-      if (!dbCategory?.id || !dbEvent?.id) {
-        throw new Error(
-          "The selected service is not available yet. Please try another service or contact support."
-        );
-      }
-
       const bookingData: BookingData = {
-        category_id: dbCategory.id,
-        event_id: dbEvent.id,
+        category_id: booking.category_id,
+        event_id: booking.event_id,
         requested_date: booking.requested_date,
         requested_time: booking.requested_time,
         client_notes: booking.client_notes ?? undefined,
@@ -261,6 +279,14 @@ export default function BookPage() {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Spinner className="h-8 w-8" />
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-4xl">
       <ProgressIndicator currentStep={step} completedSteps={completedSteps} />
@@ -268,6 +294,7 @@ export default function BookPage() {
       <div className="mt-8">
         {step === 1 && (
           <StepCategory
+            categories={categories}
             selectedCategoryId={booking.category_id}
             onSelect={handleSelectCategory}
           />
@@ -275,7 +302,8 @@ export default function BookPage() {
 
         {step === 2 && booking.category_id && (
           <StepEvent
-            categoryId={booking.category_id}
+            categoryName={selectedCategory?.name ?? ""}
+            events={categoryEvents}
             selectedEventId={booking.event_id}
             onSelect={handleSelectEvent}
           />
@@ -296,8 +324,9 @@ export default function BookPage() {
           booking.requested_date &&
           booking.requested_time && (
             <StepReview
-              categoryId={booking.category_id}
-              eventId={booking.event_id}
+              categoryName={selectedCategory?.name ?? "Unknown"}
+              eventName={selectedEvent?.name ?? "Unknown"}
+              eventDuration={selectedEvent?.duration ?? null}
               requestedDate={booking.requested_date}
               requestedTime={booking.requested_time}
               onSubmit={handleSubmit}

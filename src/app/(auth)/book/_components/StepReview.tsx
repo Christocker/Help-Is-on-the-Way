@@ -1,31 +1,29 @@
 "use client";
 
-import { getCategoryById, getEventById } from "@/lib/data";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { formatDate, formatTime } from "@/lib/utils";
 import { useState } from "react";
 
 interface StepReviewProps {
-  categoryId: string;
-  eventId: string;
+  categoryName: string;
+  eventName: string;
+  eventDuration: number | null;
   requestedDate: string;
   requestedTime: string;
   onSubmit: () => Promise<void>;
 }
 
 export function StepReview({
-  categoryId,
-  eventId,
+  categoryName,
+  eventName,
+  eventDuration,
   requestedDate,
   requestedTime,
   onSubmit,
 }: StepReviewProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const category = getCategoryById(categoryId);
-  const event = getEventById(eventId);
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -70,19 +68,19 @@ export function StepReview({
             <div className="flex justify-between py-3 first:pt-0">
               <dt className="text-sm text-muted">Category</dt>
               <dd className="text-sm font-medium text-foreground">
-                {category?.name ?? "Unknown"}
+                {categoryName}
               </dd>
             </div>
             <div className="flex justify-between py-3">
               <dt className="text-sm text-muted">Service</dt>
               <dd className="text-right text-sm font-medium text-foreground">
-                <div>{event?.name ?? "Unknown"}</div>
+                <div>{eventName}</div>
               </dd>
             </div>
             <div className="flex justify-between py-3">
               <dt className="text-sm text-muted">Duration</dt>
               <dd className="text-sm font-semibold text-primary-700">
-                {event?.duration ? formatDuration(event.duration) : "—"}
+                {eventDuration ? formatDuration(eventDuration) : "—"}
               </dd>
             </div>
             <div className="flex justify-between py-3">

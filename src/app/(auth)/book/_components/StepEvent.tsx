@@ -1,23 +1,26 @@
 "use client";
 
-import { getEventsByCategory, getCategoryById } from "@/lib/data";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useState } from "react";
+import type { Event } from "@/lib/types";
 
 interface StepEventProps {
-  categoryId: string;
+  categoryName: string;
+  events: Event[];
   selectedEventId: string | null;
   onSelect: (eventId: string) => void;
 }
 
-export function StepEvent({ categoryId, selectedEventId, onSelect }: StepEventProps) {
+export function StepEvent({
+  categoryName,
+  events,
+  selectedEventId,
+  onSelect,
+}: StepEventProps) {
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
-
-  const category = getCategoryById(categoryId);
-  const events = getEventsByCategory(categoryId).filter((e) => e.is_active);
 
   const handleImageError = (eventId: string) => {
     setImageErrors((prev) => new Set(prev).add(eventId));
@@ -32,7 +35,9 @@ export function StepEvent({ categoryId, selectedEventId, onSelect }: StepEventPr
     return `${minutes}m`;
   };
 
-  if (events.length === 0) {
+  const activeEvents = events.filter((e) => e.is_active);
+
+  if (activeEvents.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <div className="mb-4 rounded-full bg-muted p-4">
@@ -62,9 +67,9 @@ export function StepEvent({ categoryId, selectedEventId, onSelect }: StepEventPr
   return (
     <div>
       <div className="mb-6">
-        {category && (
+        {categoryName && (
           <span className="mb-2 inline-block rounded-full bg-primary-50 px-3 py-1 text-xs font-medium text-primary-700">
-            {category.name}
+            {categoryName}
           </span>
         )}
         <h2 className="text-2xl font-bold tracking-tight text-foreground">
@@ -75,7 +80,7 @@ export function StepEvent({ categoryId, selectedEventId, onSelect }: StepEventPr
         </p>
       </div>
       <div className="grid gap-6 sm:grid-cols-2">
-        {events.map((event) => {
+        {activeEvents.map((event) => {
           const isSelected = selectedEventId === event.id;
           const hasImageError = imageErrors.has(event.id);
 
