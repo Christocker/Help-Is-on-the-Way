@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Spinner } from "@/components/ui/Loading";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import {
   AppointmentWithDetails,
   AppointmentStatus,
@@ -54,6 +55,8 @@ export default function AdminAppointmentsPage() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const [deletingAppointment, setDeletingAppointment] =
+    useState<AppointmentWithDetails | null>(null);
 
   const fetchAppointments = useCallback(async () => {
     setLoading(true);
@@ -193,6 +196,46 @@ export default function AdminAppointmentsPage() {
       setSaveMessage({
         type: "error",
         text: err instanceof Error ? err.message : "Failed to save changes",
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeleteAppointment(appointment: AppointmentWithDetails) {
+    setSaving(true);
+    setSaveMessage(null);
+    try {
+      const supabase = createClient();
+      const { error: deleteError } = await supabase
+        .from("appointments")
+        .delete()
+        .eq("id", appointment.id);
+
+      if (deleteError) {
+        setSaveMessage({
+          type: "error",
+          text:
+            "Could not delete this appointment: " +
+            (deleteError.message || "unknown error"),
+        });
+        return;
+      }
+
+      setAppointments((prev) =>
+        prev.filter((a) => a.id !== appointment.id)
+      );
+      setSelectedAppointment(null);
+      setDeletingAppointment(null);
+      setSaveMessage({
+        type: "success",
+        text: "Appointment deleted. It has been removed from the client's bookings.",
+      });
+    } catch (err) {
+      setSaveMessage({
+        type: "error",
+        text:
+          err instanceof Error ? err.message : "Failed to delete appointment",
       });
     } finally {
       setSaving(false);
@@ -346,6 +389,9 @@ export default function AdminAppointmentsPage() {
                     <AppointmentDetail
                       appointment={selectedAppointment}
                       onSaveChanges={handleSaveChanges}
+                      onDelete={() =>
+                        setDeletingAppointment(selectedAppointment)
+                      }
                       saving={saving}
                       saveMessage={saveMessage}
                     />
@@ -356,6 +402,27 @@ export default function AdminAppointmentsPage() {
           </div>
         </Card>
       )}
+
+      <ConfirmDialog
+        open={deletingAppointment !== null}
+        title="Delete appointment?"
+        description={
+          <p>
+            This will permanently delete this appointment for{" "}
+            <span className="font-semibold text-foreground">
+              {deletingAppointment?.profiles?.full_name ?? "the client"}
+            </span>
+            . It will be completely removed from the client&apos;s bookings.
+            This action cannot be undone.
+          </p>
+        }
+        confirmLabel="Delete Appointment"
+        loading={saving}
+        onConfirm={() => {
+          if (deletingAppointment) handleDeleteAppointment(deletingAppointment);
+        }}
+        onCancel={() => setDeletingAppointment(null)}
+      />
     </div>
   );
 }
@@ -401,6 +468,7 @@ const RESCHEDULE_TIMES = generateRescheduleTimes();
 function AppointmentDetail({
   appointment,
   onSaveChanges,
+  onDelete,
   saving,
   saveMessage,
 }: {
@@ -410,6 +478,7 @@ function AppointmentDetail({
     rescheduleDate?: string | null;
     rescheduleTime?: string | null;
   }) => void;
+  onDelete: () => void;
   saving: boolean;
   saveMessage: { type: "success" | "error"; text: string } | null;
 }) {
@@ -583,9 +652,20 @@ function AppointmentDetail({
           />
         </div>
 
-        <Button type="submit" size="sm" isLoading={saving}>
-          Save Changes
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button type="submit" size="sm" isLoading={saving}>
+            Save Changes
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            onClick={onDelete}
+            disabled={saving}
+          >
+            Delete Appointment
+          </Button>
+        </div>
 
         {saveMessage && (
           <p
