@@ -193,8 +193,8 @@ export async function notifyAppointmentStatus(input: {
     clientName,
     categoryName: appointment.categories?.name ?? "Mental Health Service",
     eventName: appointment.events?.name ?? "Appointment",
-    date: formatDate(eventDate),
-    time: formatTime(eventTime),
+    date: eventDate ? formatDate(eventDate) : "To be arranged",
+    time: eventTime ? formatTime(eventTime) : "",
     status: input.status,
   });
 

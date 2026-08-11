@@ -47,10 +47,10 @@ export default async function AdminDashboardPage() {
     .split("T")[0];
 
   const todayAppointments = allAppointments.filter(
-    (a) => a.requested_date === today
+    (a) => a.requested_date != null && a.requested_date === today
   );
   const monthAppointments = allAppointments.filter(
-    (a) => a.requested_date >= firstOfMonth
+    (a) => a.requested_date != null && a.requested_date >= firstOfMonth
   );
 
   const stats = [
@@ -247,8 +247,9 @@ export default async function AdminDashboardPage() {
                         {apt.events?.name ?? "Unknown"}
                       </p>
                       <p className="text-xs text-muted-light">
-                        {formatDate(apt.requested_date)} at{" "}
-                        {formatTime(apt.requested_time)}
+                        {apt.requested_date && apt.requested_time
+                          ? `${formatDate(apt.requested_date)} at ${formatTime(apt.requested_time)}`
+                          : "Schedule: To be arranged"}
                       </p>
                     </div>
                     <Badge

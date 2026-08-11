@@ -35,7 +35,7 @@ const supportFaqs = [
   {
     question: "How long until I hear back after booking?",
     answer:
-      "Our team typically responds within 1-3 business days. Once you submit a booking request, we coordinate with Argao Psych to confirm your appointment and send you a confirmation notification through the platform.",
+      "Within 24-48 hours of submitting your request, our team will email you a proposed schedule for your appointment. Once you confirm the date and time, your appointment is locked in.",
   },
   {
     question: "Can I reschedule my appointment?",

@@ -96,7 +96,9 @@ export default function AdminAppointmentsPage() {
       return (a.profiles?.full_name ?? "").toLowerCase().includes(q);
     })
     .sort((a, b) => {
-      const cmp = a.requested_date.localeCompare(b.requested_date);
+      const cmp = (a.requested_date ?? "").localeCompare(
+        b.requested_date ?? ""
+      );
       return sortOrder === "desc" ? -cmp || 0 : cmp || 0;
     });
 
@@ -130,12 +132,15 @@ export default function AdminAppointmentsPage() {
         argao_reference: argaoReference || null,
       };
 
-      // If rescheduled, also update the requested date/time.
-      if (newStatus === "rescheduled") {
+      // Assign or update the schedule for confirmed/rescheduled appointments.
+      if (newStatus === "confirmed" || newStatus === "rescheduled") {
         if (!rescheduleDate || !rescheduleTime) {
           setSaveMessage({
             type: "error",
-            text: "Please select a new date and time for the rescheduled appointment.",
+            text:
+              newStatus === "rescheduled"
+                ? "Please select a new date and time for the rescheduled appointment."
+                : "Please select a date and time for the confirmed appointment.",
           });
           setSaving(false);
           return;
@@ -175,8 +180,8 @@ export default function AdminAppointmentsPage() {
       const notify = await notifyAppointmentStatus({
         appointmentId: selectedAppointment.id,
         status: newStatus,
-        requestedDate: updated.requested_date,
-        requestedTime: updated.requested_time,
+        requestedDate: updated.requested_date ?? undefined,
+        requestedTime: updated.requested_time ?? undefined,
       });
       if (notify.ok) {
         setSaveMessage({
@@ -355,8 +360,9 @@ export default function AdminAppointmentsPage() {
                     {apt.events?.name ?? "Unknown"}
                   </p>
                   <p className="text-xs text-muted-light">
-                    {formatDate(apt.requested_date)} at{" "}
-                    {formatTime(apt.requested_time)}
+                    {apt.requested_date && apt.requested_time
+                      ? `${formatDate(apt.requested_date)} at ${formatTime(apt.requested_time)}`
+                      : "Schedule: To be arranged"}
                   </p>
                 </div>
                 <Badge
@@ -480,6 +486,7 @@ function AppointmentDetail({
   const [rescheduleTime, setRescheduleTime] = useState<string>("");
 
   const isRescheduled = status === "rescheduled";
+  const needsSchedule = status === "confirmed" || status === "rescheduled";
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
@@ -501,12 +508,12 @@ function AppointmentDetail({
           <DetailRow label="Category" value={appointment.categories?.name} />
           <DetailRow label="Event" value={appointment.events?.name} />
           <DetailRow
-            label="Date"
-            value={formatDate(appointment.requested_date)}
-          />
-          <DetailRow
-            label="Time"
-            value={formatTime(appointment.requested_time)}
+            label="Schedule"
+            value={
+              appointment.requested_date && appointment.requested_time
+                ? `${formatDate(appointment.requested_date)} at ${formatTime(appointment.requested_time)}`
+                : "To be arranged"
+            }
           />
           <DetailRow
             label="Client Notes"
@@ -531,8 +538,8 @@ function AppointmentDetail({
           e.preventDefault();
           onSaveChanges({
             newStatus: status,
-            rescheduleDate: isRescheduled ? rescheduleDate : null,
-            rescheduleTime: isRescheduled ? rescheduleTime : null,
+            rescheduleDate: needsSchedule ? rescheduleDate : null,
+            rescheduleTime: needsSchedule ? rescheduleTime : null,
           });
         }}
       >
@@ -557,17 +564,17 @@ function AppointmentDetail({
           </p>
         </div>
 
-        {isRescheduled && (
+        {needsSchedule && (
           <div className="rounded-lg border border-primary-100 bg-primary-50 p-3 space-y-3">
             <p className="text-xs font-semibold text-primary-800">
-              New Schedule
+              {status === "rescheduled" ? "New Schedule" : "Assign Schedule"}
             </p>
             <div>
               <label
                 htmlFor={`reschedule_date_${appointment.id}`}
                 className="block text-sm font-medium text-foreground mb-1.5"
               >
-                New Date
+                {status === "rescheduled" ? "New Date" : "Schedule Date"}
               </label>
               <select
                 id={`reschedule_date_${appointment.id}`}
@@ -589,7 +596,7 @@ function AppointmentDetail({
                 htmlFor={`reschedule_time_${appointment.id}`}
                 className="block text-sm font-medium text-foreground mb-1.5"
               >
-                New Time
+                {status === "rescheduled" ? "New Time" : "Schedule Time"}
               </label>
               <select
                 id={`reschedule_time_${appointment.id}`}

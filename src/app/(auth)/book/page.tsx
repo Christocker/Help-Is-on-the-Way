@@ -6,7 +6,6 @@ import { createClient } from "@/lib/supabase/client";
 import { ProgressIndicator } from "./_components/ProgressIndicator";
 import { StepCategory } from "./_components/StepCategory";
 import { StepEvent } from "./_components/StepEvent";
-import { StepDateTime } from "./_components/StepDateTime";
 import { StepReview } from "./_components/StepReview";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Loading";
@@ -15,16 +14,12 @@ import { BookingData, Category, Event } from "@/lib/types";
 type BookingState = {
   category_id: string | null;
   event_id: string | null;
-  requested_date: string | null;
-  requested_time: string | null;
   client_notes: string | null;
 };
 
 const INITIAL_STATE: BookingState = {
   category_id: null,
   event_id: null,
-  requested_date: null,
-  requested_time: null,
   client_notes: null,
 };
 
@@ -87,7 +82,6 @@ export default function BookPage() {
     const completed: number[] = [];
     if (step > 1) completed.push(1);
     if (step > 2) completed.push(2);
-    if (step > 3) completed.push(3);
     return completed;
   })();
 
@@ -105,23 +99,6 @@ export default function BookPage() {
     setBooking((prev) => ({
       ...prev,
       event_id: eventId,
-      requested_date: null,
-      requested_time: null,
-    }));
-  }, []);
-
-  const handleSelectDate = useCallback((date: string) => {
-    setBooking((prev) => ({
-      ...prev,
-      requested_date: date,
-      requested_time: null,
-    }));
-  }, []);
-
-  const handleSelectTime = useCallback((time: string) => {
-    setBooking((prev) => ({
-      ...prev,
-      requested_time: time,
     }));
   }, []);
 
@@ -131,8 +108,6 @@ export default function BookPage() {
         return booking.category_id !== null;
       case 2:
         return booking.event_id !== null;
-      case 3:
-        return booking.requested_date !== null && booking.requested_time !== null;
       default:
         return false;
     }
@@ -140,7 +115,7 @@ export default function BookPage() {
 
   const handleNext = () => {
     if (!canProceedFromStep(step)) return;
-    if (step < 4) {
+    if (step < 3) {
       setStep((prev) => prev + 1);
     }
   };
@@ -154,12 +129,7 @@ export default function BookPage() {
   };
 
   const handleSubmit = async () => {
-    if (
-      !booking.category_id ||
-      !booking.event_id ||
-      !booking.requested_date ||
-      !booking.requested_time
-    ) {
+    if (!booking.category_id || !booking.event_id) {
       setSubmissionError("Missing required booking information.");
       return;
     }
@@ -181,8 +151,6 @@ export default function BookPage() {
       const bookingData: BookingData = {
         category_id: booking.category_id,
         event_id: booking.event_id,
-        requested_date: booking.requested_date,
-        requested_time: booking.requested_time,
         client_notes: booking.client_notes ?? undefined,
       };
 
@@ -192,8 +160,6 @@ export default function BookPage() {
           client_id: user.id,
           category_id: bookingData.category_id,
           event_id: bookingData.event_id,
-          requested_date: bookingData.requested_date,
-          requested_time: bookingData.requested_time,
           status: "submitted",
           client_notes: bookingData.client_notes ?? null,
         })
@@ -210,7 +176,7 @@ export default function BookPage() {
           client_id: user.id,
           appointment_id: appointment.id,
           message:
-            "Your appointment request has been submitted. Our team will coordinate with our partner mental healthcare provider.",
+            "Your appointment request has been submitted. Our team will email you a proposed schedule within 24-48 hours for you to confirm.",
           is_read: false,
         });
 
@@ -254,9 +220,9 @@ export default function BookPage() {
             Your appointment request has been submitted.
           </h2>
           <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-muted">
-            Our team will review your request and coordinate with our partner mental
-            healthcare provider. You will receive a notification once your appointment is
-            confirmed.
+            Our team will coordinate with our partner mental healthcare provider
+            and email you a proposed schedule within 24-48 hours for you to
+            confirm. No payment is required from you.
           </p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Button
@@ -309,29 +275,14 @@ export default function BookPage() {
           />
         )}
 
-        {step === 3 && (
-          <StepDateTime
-            selectedDate={booking.requested_date}
-            selectedTime={booking.requested_time}
-            onSelectDate={handleSelectDate}
-            onSelectTime={handleSelectTime}
+        {step === 3 && booking.category_id && booking.event_id && (
+          <StepReview
+            categoryName={selectedCategory?.name ?? "Unknown"}
+            eventName={selectedEvent?.name ?? "Unknown"}
+            eventDuration={selectedEvent?.duration ?? null}
+            onSubmit={handleSubmit}
           />
         )}
-
-        {step === 4 &&
-          booking.category_id &&
-          booking.event_id &&
-          booking.requested_date &&
-          booking.requested_time && (
-            <StepReview
-              categoryName={selectedCategory?.name ?? "Unknown"}
-              eventName={selectedEvent?.name ?? "Unknown"}
-              eventDuration={selectedEvent?.duration ?? null}
-              requestedDate={booking.requested_date}
-              requestedTime={booking.requested_time}
-              onSubmit={handleSubmit}
-            />
-          )}
       </div>
 
       {submissionError && (
@@ -356,8 +307,8 @@ export default function BookPage() {
         </div>
       )}
 
-      {/* Navigation Buttons - hidden on step 4 since StepReview has its own */}
-      {step < 4 && (
+      {/* Navigation Buttons - hidden on step 3 since StepReview has its own */}
+      {step < 3 && (
         <div className="mt-8 flex items-center justify-between border-t border-border pt-6">
           <Button
             type="button"
@@ -375,7 +326,7 @@ export default function BookPage() {
             onClick={handleNext}
             disabled={!canProceedFromStep(step) || isSubmitting}
           >
-            {step === 3 ? "Review Booking" : "Continue"}
+            {step === 2 ? "Review Booking" : "Continue"}
           </Button>
         </div>
       )}

@@ -122,15 +122,12 @@ export default async function DashboardPage() {
                   </span>
                 </div>
                 <div>
-                  <span className="text-muted">Date: </span>
+                  <span className="text-muted">Schedule: </span>
                   <span className="font-medium text-foreground">
-                    {formatDate(latestAppointment.requested_date)}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-muted">Time: </span>
-                  <span className="font-medium text-foreground">
-                    {formatTime(latestAppointment.requested_time)}
+                    {latestAppointment.requested_date &&
+                    latestAppointment.requested_time
+                      ? `${formatDate(latestAppointment.requested_date)} at ${formatTime(latestAppointment.requested_time)}`
+                      : "To be arranged"}
                   </span>
                 </div>
               </div>

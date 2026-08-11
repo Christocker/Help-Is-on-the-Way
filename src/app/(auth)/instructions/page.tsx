@@ -11,17 +11,17 @@ const FALLBACK_INSTRUCTIONS = [
   {
     title: "How to Book",
     content:
-      "1. Navigate to the Book a Session page.\n2. Select the category that best fits your needs.\n3. Choose a specific event or service.\n4. Pick your preferred date and time.\n5. Review and submit your appointment request.",
+      "1. Navigate to the Book a Session page.\n2. Select the category that best fits your needs.\n3. Choose a specific event or service.\n4. Review and submit your appointment request. No need to pick a date and time — our team will arrange the schedule for you.",
   },
   {
     title: "What Happens After You Submit",
     content:
-      "Our team will receive your request and coordinate with our partner mental healthcare provider. You will be notified of any updates to your appointment status.",
+      "Our team will receive your request and coordinate with our partner mental healthcare provider. Within 24-48 hours, we will email you a proposed schedule for you to confirm. You will also be notified of any updates to your appointment status.",
   },
   {
     title: "How Confirmation Works",
     content:
-      "You will receive a notification when your appointment is confirmed. Please check your notifications regularly for updates.",
+      "We will email you a proposed date and time for your appointment. Once you confirm the schedule, your appointment is locked in. Please check your email and notifications regularly for updates.",
   },
   {
     title: "Preparing for Your Appointment",

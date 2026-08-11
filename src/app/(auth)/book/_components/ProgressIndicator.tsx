@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 const STEPS = [
   { key: "category", label: "Category" },
   { key: "event", label: "Event" },
-  { key: "datetime", label: "Date & Time" },
   { key: "review", label: "Review & Confirm" },
 ] as const;
 

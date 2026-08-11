@@ -47,8 +47,8 @@ export interface Appointment {
   client_id: string;
   category_id: string;
   event_id: string;
-  requested_date: string;
-  requested_time: string;
+  requested_date: string | null;
+  requested_time: string | null;
   status: AppointmentStatus;
   client_notes: string | null;
   admin_notes: string | null;
@@ -94,8 +94,6 @@ export interface Notification {
 export interface BookingData {
   category_id: string;
   event_id: string;
-  requested_date: string;
-  requested_time: string;
   client_notes?: string;
 }
 

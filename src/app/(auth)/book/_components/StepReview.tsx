@@ -2,15 +2,12 @@
 
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { formatDate, formatTime } from "@/lib/utils";
 import { useState } from "react";
 
 interface StepReviewProps {
   categoryName: string;
   eventName: string;
   eventDuration: number | null;
-  requestedDate: string;
-  requestedTime: string;
   onSubmit: () => Promise<void>;
 }
 
@@ -18,8 +15,6 @@ export function StepReview({
   categoryName,
   eventName,
   eventDuration,
-  requestedDate,
-  requestedTime,
   onSubmit,
 }: StepReviewProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -84,15 +79,9 @@ export function StepReview({
               </dd>
             </div>
             <div className="flex justify-between py-3">
-              <dt className="text-sm text-muted">Date</dt>
+              <dt className="text-sm text-muted">Schedule</dt>
               <dd className="text-sm font-medium text-foreground">
-                {formatDate(requestedDate)}
-              </dd>
-            </div>
-            <div className="flex justify-between py-3">
-              <dt className="text-sm text-muted">Time</dt>
-              <dd className="text-sm font-medium text-foreground">
-                {formatTime(requestedTime)}
+                To be arranged — we&apos;ll email you within 24-48 hours
               </dd>
             </div>
           </dl>
@@ -122,9 +111,10 @@ export function StepReview({
                 No payment is required from you.
               </p>
               <p className="mt-2 text-sm leading-relaxed text-primary-700/80">
-                After you submit your request, Help Is on the Way will arrange the
-                corresponding appointment with our partner mental healthcare provider on
-                your behalf.
+                After you submit your request, Help Is on the Way will arrange a
+                schedule with our partner mental healthcare provider and email
+                you the proposed appointment within 24-48 hours for you to
+                confirm.
               </p>
             </div>
           </div>

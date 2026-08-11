@@ -90,15 +90,11 @@ export default async function AppointmentsPage() {
                   </p>
                   <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
                     <span className="text-muted">
-                      Date:{" "}
+                      Schedule:{" "}
                       <span className="font-medium text-foreground">
-                        {formatDate(appt.requested_date)}
-                      </span>
-                    </span>
-                    <span className="text-muted">
-                      Time:{" "}
-                      <span className="font-medium text-foreground">
-                        {formatTime(appt.requested_time)}
+                        {appt.requested_date && appt.requested_time
+                          ? `${formatDate(appt.requested_date)} at ${formatTime(appt.requested_time)}`
+                          : "To be arranged"}
                       </span>
                     </span>
                   </div>
