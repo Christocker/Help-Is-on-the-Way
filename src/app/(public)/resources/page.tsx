@@ -11,10 +11,10 @@ export const metadata: Metadata = {
 const hotlines = [
   {
     name: "NCMH Crisis Hotline",
-    phone1: "0917-899-8727",
-    phone1Href: "tel:09178998727",
-    phone2: "(02) 989-8727",
-    phone2Href: "tel:028998727",
+    phone1: "skbarangay176c@gmail.com",
+    phone1Href: "mailto:skbarangay176c@gmail.com",
+    phone2: "https://www.facebook.com/SKCouncil176C",
+    phone2Href: "https://www.facebook.com/SKCouncil176C",
     description: "National Center for Mental Health 24/7 crisis support hotline.",
     icon: (
       <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">

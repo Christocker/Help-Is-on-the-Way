@@ -40,7 +40,7 @@ const supportFaqs = [
   {
     question: "Can I reschedule my appointment?",
     answer:
-      "Yes, you can request to reschedule your appointment. Contact us through the platform or email us at support@argaopsych.com, and our team will work with you and the provider to find a new time that works for everyone.",
+      "Yes, you can request to reschedule your appointment. Contact us through the platform or email us at skbarangay176c@gmail.com, and our team will work with you and the provider to find a new time that works for everyone.",
   },
   {
     question: "Is my information safe?",
@@ -149,13 +149,13 @@ export default function FAQ() {
                     nearest emergency room right away.
                   </p>
                   <p className="mt-4 text-sm font-medium text-red-800">
-                    NCMH Crisis Hotline (24/7):{" "}
-                    <a href="tel:09178998727" className="font-semibold underline hover:text-destructive">
-                      0917-899-8727
+                    Reach us at:{" "}
+                    <a href="mailto:skbarangay176c@gmail.com" className="font-semibold underline hover:text-destructive">
+                      skbarangay176c@gmail.com
                     </a>{" "}
                     /{" "}
-                    <a href="tel:028998727" className="font-semibold underline hover:text-destructive">
-                      (02) 989-8727
+                    <a href="https://www.facebook.com/SKCouncil176C" target="_blank" rel="noopener noreferrer" className="font-semibold underline hover:text-destructive">
+                      facebook.com/SKCouncil176C
                     </a>
                   </p>
                 </div>

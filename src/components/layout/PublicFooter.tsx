@@ -57,22 +57,19 @@ export function PublicFooter() {
           ))}
 
           <div>
-            <h3 className="text-sm font-semibold text-white">Crisis Support</h3>
+            <h3 className="text-sm font-semibold text-white">Get in Touch</h3>
             <p className="mt-4 text-xs text-white/50 leading-relaxed">
-              If you are experiencing a mental health crisis, reach out immediately.
+              Reach out to our team for questions, support, or to learn more.
             </p>
             <div className="mt-4 space-y-2 text-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-accent-light">
-                NCMH Crisis Hotline
-              </p>
               <p>
-                <a href="tel:09178998727" className="text-white/80 transition-colors hover:text-white">
-                  0917-899-8727
+                <a href="mailto:skbarangay176c@gmail.com" className="text-white/80 transition-colors hover:text-white">
+                  skbarangay176c@gmail.com
                 </a>
               </p>
               <p>
-                <a href="tel:028998727" className="text-white/80 transition-colors hover:text-white">
-                  (02) 989-8727
+                <a href="https://www.facebook.com/SKCouncil176C" target="_blank" rel="noopener noreferrer" className="text-white/80 transition-colors hover:text-white">
+                  facebook.com/SKCouncil176C
                 </a>
               </p>
             </div>
