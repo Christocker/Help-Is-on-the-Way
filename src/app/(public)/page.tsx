@@ -124,7 +124,7 @@ export default async function Home() {
       <PublicHero
         eyebrow="Free Mental Healthcare Access"
         title="Help Is on the Way"
-        subtitle="You deserve professional mental health care, no matter your financial situation. We coordinate with licensed providers so you can focus on what matters — your wellbeing."
+        subtitle="HELP IS ON THE WAY is a peer-led, volunteer-powered mental health support system providing the first line of support through PFA in a digital platform and community “ugnayan”. Inspired by the Bayanihan E-Konsulta of VP Leni Robredo, this initiative addresses the mental health gap in the Philippines by empowering trained Peer Responders to deliver frontline mental health support, especially for underserved and marginalized communities."
       >
         <HeroActions />
         <dl className="mx-auto mt-12 grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4">
