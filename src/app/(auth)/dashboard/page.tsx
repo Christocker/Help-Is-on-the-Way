@@ -58,6 +58,20 @@ export default async function DashboardPage() {
 
       <section>
         <Card>
+          <p className="text-sm leading-relaxed text-muted">
+            HELP IS ON THE WAY is a peer-led, volunteer-powered mental health
+            support system providing the first line of support through PFA in a
+            digital platform and community &ldquo;ugnayan&rdquo;. Inspired by
+            the Bayanihan E-Konsulta of VP Leni Robredo, this initiative
+            addresses the mental health gap in the Philippines by empowering
+            trained Peer Responders to deliver frontline mental health support,
+            especially for underserved and marginalized communities.
+          </p>
+        </Card>
+      </section>
+
+      <section>
+        <Card>
           <h2 className="text-lg font-semibold text-foreground mb-4">
             Quick Actions
           </h2>
