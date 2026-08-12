@@ -2,20 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { PublicHero, HeroActions } from "@/components/layout/PublicHero";
-import { fetchCategoriesFromDb } from "@/lib/data-server";
+import { fetchCategoriesFromDb, fetchEventsFromDb } from "@/lib/data-server";
 
 export const metadata: Metadata = {
   title: "Help Is on the Way - Free Mental Healthcare Access",
   description:
     "Free mental healthcare access platform connecting individuals with professional mental health services. Browse services, book a session, and get confirmed support.",
 };
-
-const stats = [
-  { value: "100%", label: "Free of charge" },
-  { value: "6", label: "Care categories" },
-  { value: "31", label: "Available services" },
-  { value: "Free", label: "Confidential support" },
-];
 
 const steps = [
   {
@@ -117,7 +110,18 @@ const testimonials = [
 ];
 
 export default async function Home() {
-  const categories = await fetchCategoriesFromDb();
+  const [categories, events] = await Promise.all([
+    fetchCategoriesFromDb(),
+    fetchEventsFromDb(),
+  ]);
+
+  const stats = [
+    { value: "100%", label: "Free of charge" },
+    { value: String(categories.length), label: "Care categories" },
+    { value: String(events.length), label: "Available services" },
+    { value: "Free", label: "Confidential support" },
+  ];
+
   return (
     <>
       {/* Hero */}
