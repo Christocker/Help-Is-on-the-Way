@@ -59,13 +59,14 @@ export default async function DashboardPage() {
       <section>
         <Card>
           <p className="text-sm leading-relaxed text-muted">
-            HELP IS ON THE WAY is a peer-led, volunteer-powered mental health
-            support system providing the first line of support through PFA in a
-            digital platform and community &ldquo;ugnayan&rdquo;. Inspired by
-            the Bayanihan E-Konsulta of VP Leni Robredo, this initiative
-            addresses the mental health gap in the Philippines by empowering
-            trained Peer Responders to deliver frontline mental health support,
-            especially for underserved and marginalized communities.
+            HELP IS ON THE WAY creates a community-based mental health first
+            response network, leveraging youth leaders, student councils, SK
+            officials, and volunteers to provide direct mental health support,
+            peer support, practical PFA, and linkages to crisis hotlines or
+            community support when necessary. We want to champion the power of
+            peer support and community care to ensure that no one feels alone
+            in their mental health struggles. Through conversation, connection,
+            and compassion, we bring bayanihan into mental wellness.
           </p>
         </Card>
       </section>
