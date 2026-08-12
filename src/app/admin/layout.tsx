@@ -96,7 +96,7 @@ export default async function AdminLayout({
       <aside className="flex w-64 flex-col bg-navy">
         <div className="flex h-14 items-center gap-3 border-b border-white/10 px-4">
           <Logo
-            imgClassName="h-8 w-8"
+            imgClassName="h-10 w-10"
             showText={false}
           />
           <div className="flex flex-col">

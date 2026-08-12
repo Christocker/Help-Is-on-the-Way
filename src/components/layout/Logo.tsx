@@ -30,7 +30,7 @@ export function Logo({
           width={1024}
           height={1024}
           priority
-          className="h-full w-full object-cover"
+          className="h-full w-full scale-125 object-cover"
         />
       </span>
       {showText && (

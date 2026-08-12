@@ -100,7 +100,7 @@ export function Sidebar({ user, unreadNotifications = 0, isAdmin = false }: Side
     <div className="flex h-full flex-col bg-navy text-white">
       <div className="flex items-center gap-3 border-b border-white/10 px-5 py-5">
         <Logo
-          imgClassName="h-10 w-10"
+          imgClassName="h-12 w-12"
           subtitle="Client Portal"
         />
       </div>

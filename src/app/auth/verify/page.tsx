@@ -24,7 +24,7 @@ export default async function VerifyPage({ searchParams }: VerifyPageProps) {
       <div className="absolute -bottom-32 -left-24 h-96 w-96 rounded-full bg-primary-light/20 blur-3xl" aria-hidden="true" />
 
       <div className="relative w-full max-w-md rounded-2xl bg-card p-6 sm:p-8 fade-in card-elevation-lg text-center">
-        <Logo imgClassName="h-14 w-14" textClassName="text-navy" subtitle="Mental Healthcare Access" />
+        <Logo imgClassName="h-16 w-16" textClassName="text-navy" subtitle="Mental Healthcare Access" />
 
         {isAlreadyVerified ? (
           <VerifiedState />

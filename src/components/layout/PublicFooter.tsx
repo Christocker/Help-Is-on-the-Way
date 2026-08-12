@@ -29,7 +29,7 @@ export function PublicFooter() {
         <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
           <div>
             <Logo
-              imgClassName="h-10 w-10"
+              imgClassName="h-12 w-12"
               subtitle="Mental Healthcare Access"
             />
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/60">

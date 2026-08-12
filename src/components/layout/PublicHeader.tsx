@@ -42,7 +42,7 @@ export function PublicHeader() {
       <div className="container-page flex h-16 items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2.5 shrink-0" aria-label="Help Is on the Way - Home">
           <Logo
-            imgClassName="h-10 w-10"
+            imgClassName="h-12 w-12"
             textClassName="text-navy"
             subtitle="Mental Healthcare Access"
           />

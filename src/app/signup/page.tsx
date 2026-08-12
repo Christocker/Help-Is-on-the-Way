@@ -20,7 +20,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
       <div className="relative w-full max-w-md rounded-2xl bg-card p-6 sm:p-8 fade-in card-elevation-lg">
         <div className="mb-8 flex flex-col items-center text-center">
           <Logo
-            imgClassName="h-14 w-14"
+            imgClassName="h-16 w-16"
             textClassName="text-navy"
             subtitle="Mental Healthcare Access"
           />
