@@ -41,7 +41,9 @@ export async function GET(request: Request) {
       return NextResponse.redirect(dest);
     }
 
-    return NextResponse.redirect(`${origin}/auth/confirm`);
+    return NextResponse.redirect(
+      `${origin}/auth/confirm?verified=1`
+    );
   }
 
   // PKCE code exchange (the standard flow)
@@ -58,7 +60,9 @@ export async function GET(request: Request) {
       return NextResponse.redirect(dest);
     }
 
-    return NextResponse.redirect(`${origin}/auth/confirm`);
+    return NextResponse.redirect(
+      `${origin}/auth/confirm?verified=1`
+    );
   }
 
   // No recognizable token or code — invalid state

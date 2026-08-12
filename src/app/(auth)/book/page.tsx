@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ProgressIndicator } from "./_components/ProgressIndicator";
@@ -25,6 +25,8 @@ const INITIAL_STATE: BookingState = {
 
 export default function BookPage() {
   const router = useRouter();
+  const supabaseRef = useRef(createClient());
+  const supabase = supabaseRef.current;
   const [step, setStep] = useState(1);
   const [booking, setBooking] = useState<BookingState>(INITIAL_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,7 +41,6 @@ export default function BookPage() {
     let cancelled = false;
     async function load() {
       try {
-        const supabase = createClient();
         const [{ data: cats }, { data: evts }] = await Promise.all([
           supabase
             .from("categories")
@@ -138,8 +139,6 @@ export default function BookPage() {
     setSubmissionError(null);
 
     try {
-      const supabase = createClient();
-
       const {
         data: { user },
       } = await supabase.auth.getUser();

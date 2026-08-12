@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -21,6 +21,8 @@ interface CategoryWithEvents extends Category {
 }
 
 export default function AdminEventsPage() {
+  const supabaseRef = useRef(createClient());
+  const supabase = supabaseRef.current;
   const [grouped, setGrouped] = useState<CategoryWithEvents[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +51,7 @@ export default function AdminEventsPage() {
     setLoading(true);
     setError(null);
     try {
-      const supabase = createClient();
+      
 
       const { data: categories, error: catError } = await supabase
         .from("categories")
@@ -90,7 +92,7 @@ export default function AdminEventsPage() {
   async function handleToggleActive(event: Event) {
     setMessage(null);
     try {
-      const supabase = createClient();
+      
       const newState = !event.is_active;
       const { error: updateError } = await supabase
         .from("events")
@@ -132,7 +134,7 @@ export default function AdminEventsPage() {
     setSaving(true);
     setMessage(null);
     try {
-      const supabase = createClient();
+      
       const { error: deleteError } = await supabase
         .from("events")
         .delete()
@@ -211,7 +213,7 @@ export default function AdminEventsPage() {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "");
-      const supabase = createClient();
+      
       const { error: updateError } = await supabase
         .from("events")
         .update({
@@ -286,7 +288,7 @@ export default function AdminEventsPage() {
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/^-|-$/g, "");
-      const supabase = createClient();
+      
       const { error: insertError } = await supabase.from("events").insert({
         category_id: addForm.category_id,
         name: addForm.name,

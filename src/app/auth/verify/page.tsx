@@ -70,18 +70,19 @@ function VerifiedState() {
 function ExpiredState({ email }: { email?: string }) {
   return (
     <div className="mt-8">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-orange-50">
-        <svg className="h-8 w-8 text-orange-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
+        <svg className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
         </svg>
       </div>
       <h1 className="mt-5 text-2xl font-bold text-foreground">
-        Verification link expired
+        Your account may already be confirmed
       </h1>
       <p className="mt-3 text-sm leading-relaxed text-muted">
-        This link is no longer valid — but your account may already be
-        confirmed. Try signing in first; if that doesn&apos;t work, request a
-        new verification email.
+        This link has expired or was already used — often because your email
+        app previewed it and already confirmed your account in the process.
+        Try signing in; if that doesn&apos;t work, request a new
+        verification email below.
       </p>
       <div className="mt-8">
         <Link
@@ -104,18 +105,19 @@ function ExpiredState({ email }: { email?: string }) {
 function InvalidState({ email }: { email?: string }) {
   return (
     <div className="mt-8">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
-        <svg className="h-8 w-8 text-destructive" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
+        <svg className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
         </svg>
       </div>
       <h1 className="mt-5 text-2xl font-bold text-foreground">
-        Verification link not recognized
+        Your account may already be confirmed
       </h1>
       <p className="mt-3 text-sm leading-relaxed text-muted">
-        This usually happens when the link was already used (for example,
-        by your email app). Your account is likely already confirmed — try
-        signing in. If not, request a new verification email below.
+        This happens when the link was already used — usually by your email
+        app previewing it, which confirmed your account in the process.
+        Try signing in now. If the account isn&apos;t confirmed yet,
+        request a new verification email below.
       </p>
       <div className="mt-8">
         <Link

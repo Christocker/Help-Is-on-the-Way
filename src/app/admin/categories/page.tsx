@@ -17,6 +17,8 @@ import {
 } from "@/app/admin/actions";
 
 export default function AdminCategoriesPage() {
+  const supabaseRef = useRef(createClient());
+  const supabase = supabaseRef.current;
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +50,6 @@ export default function AdminCategoriesPage() {
     setLoading(true);
     setError(null);
     try {
-      const supabase = createClient();
       const { data, error: fetchError } = await supabase
         .from("categories")
         .select("*")
@@ -123,7 +124,7 @@ export default function AdminCategoriesPage() {
     flip();
 
     // Persist by swapping the sort_order values.
-    const supabase = createClient();
+    
     const [err1, err2] = await Promise.all([
       supabase
         .from("categories")
@@ -147,7 +148,7 @@ export default function AdminCategoriesPage() {
   async function handleToggleActive(category: Category) {
     setMessage(null);
     try {
-      const supabase = createClient();
+      
       const newState = !category.is_active;
       const { error: updateError } = await supabase
         .from("categories")
@@ -173,7 +174,7 @@ export default function AdminCategoriesPage() {
     setSaving(true);
     setMessage(null);
     try {
-      const supabase = createClient();
+      
       const { error: deleteError } = await supabase
         .from("categories")
         .delete()
@@ -237,7 +238,7 @@ export default function AdminCategoriesPage() {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "");
-      const supabase = createClient();
+      
       const { error: updateError } = await supabase
         .from("categories")
         .update({
@@ -297,7 +298,7 @@ export default function AdminCategoriesPage() {
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/^-|-$/g, "");
-      const supabase = createClient();
+      
       const { data: inserted, error: insertError } = await supabase
         .from("categories")
         .insert({

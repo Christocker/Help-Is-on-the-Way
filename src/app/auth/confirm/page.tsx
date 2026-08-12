@@ -2,25 +2,35 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { EmailConfirmed } from "@/components/auth/EmailConfirmed";
 
-export default async function AuthConfirmPage() {
+export default async function AuthConfirmPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ verified?: string }>;
+}) {
+  const { verified } = await searchParams;
   const supabase = await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // No session → not verified (or link processed without session). Route to
-  // the verify page so the user gets a meaningful state, not a dead end.
+  // No session → redirect to verify page so the user has a clear next step.
   if (!user) {
     redirect("/auth/verify?status=expired");
   }
 
-  // If the account isn't actually confirmed, don't pretend it is. The auth
-  // provider marks the email confirmed server-side only when a valid, unexpired
-  // token is used — so an unconfirmed account here means the link was invalid
-  // or expired.
-  if (!user.email_confirmed_at) {
-    const dest = new URL("/auth/verify", "https://help-is-on-the-way.vercel.app");
+  // When the callback successfully exchanged the code, it adds ?verified=1.
+  // We trust this and show the confirmed state even if the email_confirmed_at
+  // timestamp hasn't fully propagated yet.
+  const isVerified = Boolean(verified);
+
+  // If we didn't come from a successful exchange and the email isn't
+  // confirmed, we can't show the success page — redirect to verify.
+  if (!isVerified && !user.email_confirmed_at) {
+    const dest = new URL(
+      "/auth/verify",
+      "https://help-is-on-the-way.vercel.app"
+    );
     if (user.email) dest.searchParams.set("email", user.email);
     redirect(`${dest.pathname}${dest.search}`);
   }
@@ -34,5 +44,7 @@ export default async function AuthConfirmPage() {
   const isAdmin = profile?.role === "admin";
   const dashboardHref = isAdmin ? "/admin" : "/dashboard";
 
-  return <EmailConfirmed email={user.email ?? ""} dashboardHref={dashboardHref} />;
+  return (
+    <EmailConfirmed email={user.email ?? ""} dashboardHref={dashboardHref} />
+  );
 }
