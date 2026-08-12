@@ -6,8 +6,13 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const token_hash = searchParams.get("token_hash");
   const type = searchParams.get("type");
+  const next = searchParams.get("next") ?? "/";
   const error_code = searchParams.get("error_code");
   const error_description = searchParams.get("error_description") ?? "";
+
+  // Only allow local redirects to avoid open-redirect vulnerabilities.
+  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  const redirectTo = `${origin}${safeNext}`;
 
   const supabase = await createClient();
 
@@ -24,10 +29,10 @@ export async function GET(request: Request) {
     return NextResponse.redirect(dest);
   }
 
-  // token_hash style links (some Supabase email templates use these)
+  // token_hash style links (used by recovery emails)
   if (token_hash && type) {
     const { error } = await supabase.auth.verifyOtp({
-      type: type as "email" | "signup" | "magiclink" | "invite",
+      type: type as "email" | "signup" | "magiclink" | "invite" | "recovery",
       token_hash,
     });
 
@@ -39,6 +44,11 @@ export async function GET(request: Request) {
         error.message.toLowerCase().includes("expired") ? "expired" : "invalid"
       );
       return NextResponse.redirect(dest);
+    }
+
+    // Password recovery → go to the update-password page with a live session.
+    if (type === "recovery") {
+      return NextResponse.redirect(redirectTo);
     }
 
     return NextResponse.redirect(
@@ -58,6 +68,11 @@ export async function GET(request: Request) {
         error.message.toLowerCase().includes("expired") ? "expired" : "invalid"
       );
       return NextResponse.redirect(dest);
+    }
+
+    // If this was a recovery/password reset code, go to the requested page.
+    if (safeNext !== "/") {
+      return NextResponse.redirect(redirectTo);
     }
 
     return NextResponse.redirect(

@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { updatePassword } from "@/app/auth/actions";
 import Link from "next/link";
@@ -11,6 +13,18 @@ export default async function UpdatePasswordPage({
   searchParams,
 }: UpdatePasswordPageProps) {
   const { error } = await searchParams;
+  const supabase = await createClient();
+
+  // The user must arrive here with a live session (via the auth callback that
+  // exchanges the recovery code). If there's no session, they can't update
+  // their password — send them back to request a new reset link.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/forgot-password?error=" + encodeURIComponent("Please request a new password reset link and open it in the same browser."));
+  }
 
   return (
     <AuthShell

@@ -43,8 +43,12 @@ export async function updateSession(request: NextRequest) {
   const isAuthRoute = request.nextUrl.pathname.startsWith("/login") ||
     request.nextUrl.pathname.startsWith("/signup") ||
     request.nextUrl.pathname.startsWith("/forgot-password") ||
-    request.nextUrl.pathname.startsWith("/update-password") ||
     request.nextUrl.pathname.startsWith("/auth/callback");
+
+  // /update-password is intentionally NOT an "auth route": a user who just
+  // completed the password-recovery code exchange has a session, and routing
+  // them away would break the flow. The page itself checks for a session and
+  // redirects to /forgot-password if none exists.
 
   // Verification result pages can be viewed by logged-in users too
   // (e.g. already-verified or just-confirmed), so they are not "auth routes".
