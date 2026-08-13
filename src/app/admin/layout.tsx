@@ -1,11 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import { signOut } from "@/app/auth/actions";
-import { SupportSection } from "@/components/layout/SupportSection";
-import { NavLink } from "./_components/NavLink";
-import { getInitials } from "@/lib/utils";
-import { Logo } from "@/components/layout/Logo";
+import { AdminSidebar } from "./_components/AdminSidebar";
 
 export default async function AdminLayout({
   children,
@@ -92,81 +87,15 @@ export default async function AdminLayout({
   ];
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <aside className="flex w-64 flex-col bg-navy">
-        <div className="flex h-14 items-center gap-3 border-b border-white/10 px-4">
-          <Logo
-            imgClassName="h-10 w-10"
-            showText={false}
-          />
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold text-white leading-tight">
-              Help Is on the Way
-            </span>
-            <span className="text-[10px] font-medium text-primary-light uppercase tracking-wider">
-              Admin Panel
-            </span>
-          </div>
-        </div>
-
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
-          {sidebarSections.map((section) => (
-            <div key={section.heading}>
-              <h3 className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-primary-light/60">
-                {section.heading}
-              </h3>
-              <div className="space-y-1">
-                {section.items.map((item) => (
-                  <NavLink key={item.href} href={item.href} icon={item.icon}>
-                    {item.label}
-                  </NavLink>
-                ))}
-              </div>
-            </div>
-          ))}
-        </nav>
-
-        <div className="border-t border-white/10 p-3 space-y-3">
-          <SupportSection />
-
-          <Link
-            href="/dashboard"
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-primary-light hover:bg-white/10 hover:text-white transition-colors"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 8.25V18a2.25 2.25 0 002.25 2.25h13.5A2.25 2.25 0 0021 18V8.25m-18 0V6A2.25 2.25 0 013.75 3h16.5A2.25 2.25 0 0121 6v2.25m-18 0h18M5.25 6h.008v.008H5.25V6zM7.5 6h.008v.008H7.5V6zM9.75 6h.008v.008H9.75V6z" />
-            </svg>
-            Switch to Client Portal
-          </Link>
-
-          <div className="flex items-center gap-3 px-3 py-2">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-700 text-sm font-medium text-white">
-              {getInitials(profile.full_name)}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="truncate text-sm font-medium text-white">
-                {profile.full_name}
-              </p>
-              <p className="truncate text-xs text-primary-light">{profile.email}</p>
-            </div>
-          </div>
-
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-primary-light hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
-            >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-              </svg>
-              Sign Out
-            </button>
-          </form>
-        </div>
-      </aside>
+    <div className="flex min-h-screen flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
+      <AdminSidebar
+        sections={sidebarSections}
+        fullName={profile.full_name}
+        email={profile.email}
+      />
 
       <main className="flex-1 overflow-y-auto bg-background">
-        <div className="container-page py-8">{children}</div>
+        <div className="container-page py-6 sm:py-8">{children}</div>
       </main>
     </div>
   );

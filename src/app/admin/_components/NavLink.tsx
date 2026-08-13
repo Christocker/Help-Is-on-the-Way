@@ -8,9 +8,10 @@ interface NavLinkProps {
   href: string;
   children: React.ReactNode;
   icon?: React.ReactNode;
+  onNavigate?: () => void;
 }
 
-export function NavLink({ href, children, icon }: NavLinkProps) {
+export function NavLink({ href, children, icon, onNavigate }: NavLinkProps) {
   const pathname = usePathname();
   const isActive =
     pathname === href || (href !== "/admin" && pathname.startsWith(href));
@@ -18,6 +19,7 @@ export function NavLink({ href, children, icon }: NavLinkProps) {
   return (
     <Link
       href={href}
+      onClick={onNavigate}
       className={cn(
         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
         isActive
