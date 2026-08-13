@@ -6,7 +6,7 @@ import nodemailer from "nodemailer";
 //   SMTP_PORT=465
 //   SMTP_USER=<your gmail>
 //   SMTP_PASS=<app password>
-//   EMAIL_FROM="Help Is on the Way <chrisengada@gmail.com>"
+//   EMAIL_FROM="Help Is on the Way <skbarangay176c@gmail.com>"
 
 function transporter() {
   const host = process.env.SMTP_HOST || "smtp.gmail.com";
@@ -43,7 +43,7 @@ export async function sendMail({ to, subject, html, text }: SendMailOptions) {
   }
 
   const from =
-    process.env.EMAIL_FROM || "Help Is on the Way <chrisengada@gmail.com>";
+    process.env.EMAIL_FROM || "Help Is on the Way <skbarangay176c@gmail.com>";
 
   try {
     const info = await transport.sendMail({ from, to, subject, html, text });
