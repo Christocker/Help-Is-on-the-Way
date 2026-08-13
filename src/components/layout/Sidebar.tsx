@@ -3,7 +3,7 @@
 import { cn, getInitials } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { signOut } from "@/app/auth/actions";
 import { SupportSection } from "@/components/layout/SupportSection";
 import { Logo } from "@/components/layout/Logo";
@@ -44,7 +44,6 @@ const NAV_ITEMS = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
       </svg>
     ),
-    highlighted: true,
   },
   {
     label: "Instructions",
@@ -77,32 +76,45 @@ const NAV_ITEMS = [
 
 export function Sidebar({ user, unreadNotifications = 0, isAdmin = false }: SidebarProps) {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  const closeMobile = useCallback(() => setMobileOpen(false), []);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    closeMobile();
-  }, [pathname, closeMobile]);
-
-  useEffect(() => {
-    if (mobileOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
     }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [mobileOpen]);
+  }, [open]);
 
   const sidebarContent = (
-    <div className="flex h-full flex-col bg-navy text-white">
-      <div className="flex items-center gap-3 border-b border-white/10 px-5 py-5">
-        <Logo
-          imgClassName="h-12 w-12"
-          subtitle="Client Portal"
-        />
+    <div className="flex h-full flex-col bg-navy">
+      <div className="flex h-14 items-center gap-3 border-b border-white/10 px-4">
+        <Logo imgClassName="h-10 w-10" showText={false} />
+        <div className="flex flex-col">
+          <span className="text-sm font-semibold text-white leading-tight">
+            Help Is on the Way
+          </span>
+          <span className="text-[10px] font-medium text-primary-light uppercase tracking-wider">
+            Client Portal
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          aria-label="Close menu"
+          className="ml-auto flex h-9 w-9 items-center justify-center rounded-lg text-primary-light hover:bg-white/10 hover:text-white transition-colors lg:hidden cursor-pointer"
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-4">
@@ -113,13 +125,12 @@ export function Sidebar({ user, unreadNotifications = 0, isAdmin = false }: Side
               <li key={item.href}>
                 <Link
                   href={item.href}
+                  onClick={() => setOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                    isActive &&
-                      "bg-white/15 border-l-2 border-l-primary-light max-lg:border-l-0",
-                    !isActive && "hover:bg-white/10 text-white/80 hover:text-white",
-                    item.highlighted &&
-                      "border border-white/20 bg-white/10 hover:bg-white/20 text-white"
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-primary-700 text-white"
+                      : "text-primary-light hover:bg-white/10 hover:text-white"
                   )}
                 >
                   {item.icon}
@@ -136,41 +147,38 @@ export function Sidebar({ user, unreadNotifications = 0, isAdmin = false }: Side
         </ul>
       </nav>
 
-      <div className="border-t border-white/10 px-4 py-3">
+      <div className="border-t border-white/10 p-3 space-y-3">
         <SupportSection />
-      </div>
 
-      {isAdmin && (
-        <div className="border-t border-white/10 px-4 py-3">
+        {isAdmin && (
           <Link
             href="/admin"
-            className="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+            onClick={() => setOpen(false)}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-primary-light hover:bg-white/10 hover:text-white transition-colors"
           >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
             </svg>
             Switch to Admin Panel
           </Link>
-        </div>
-      )}
+        )}
 
-      <div className="border-t border-white/10 px-4 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 text-sm font-medium">
+        <div className="flex items-center gap-3 px-3 py-2">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-700 text-sm font-medium text-white">
             {getInitials(user.full_name)}
           </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium leading-tight">{user.full_name}</p>
-            <p className="truncate text-xs text-white/60 leading-tight">{user.email}</p>
+          <div className="flex-1 min-w-0">
+            <p className="truncate text-sm font-medium text-white">{user.full_name}</p>
+            <p className="truncate text-xs text-primary-light">{user.email}</p>
           </div>
         </div>
 
         <form action={signOut}>
           <button
             type="submit"
-            className="mt-3 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/10 hover:text-white cursor-pointer"
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-primary-light hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
           >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
             </svg>
             Sign Out
@@ -182,48 +190,56 @@ export function Sidebar({ user, unreadNotifications = 0, isAdmin = false }: Side
 
   return (
     <>
-      {/* Mobile hamburger */}
-      <button
-        type="button"
-        className="fixed top-3 left-3 z-40 flex h-10 w-10 items-center justify-center rounded-lg bg-navy text-white shadow-lg lg:hidden cursor-pointer"
-        onClick={() => setMobileOpen(true)}
-        aria-label="Open navigation menu"
-      >
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-        </svg>
-      </button>
+      {/* Mobile header bar with hamburger */}
+      <header className="flex h-14 items-center gap-3 border-b border-border bg-navy px-4 lg:hidden">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Open menu"
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-primary-light hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
+        <Logo imgClassName="h-8 w-8" showText={false} />
+        <span className="text-sm font-semibold text-white leading-tight">
+          Help Is on the Way
+        </span>
+        <span className="text-[10px] font-medium text-primary-light uppercase tracking-wider">
+          Client
+        </span>
+      </header>
 
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 lg:block">
+      <aside className="hidden w-64 shrink-0 lg:block">
         {sidebarContent}
       </aside>
 
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-            onClick={closeMobile}
-            aria-hidden="true"
-          />
-          <aside className="fixed inset-y-0 left-0 z-50 w-64 lg:hidden animate-slide-in">
-            <div className="relative h-full">
-              <button
-                type="button"
-                className="absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 lg:hidden cursor-pointer"
-                onClick={closeMobile}
-                aria-label="Close navigation menu"
-              >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                </svg>
-              </button>
-              {sidebarContent}
-            </div>
-          </aside>
-        </>
-      )}
+      {/* Mobile drawer overlay */}
+      <div
+        className={cn(
+          "fixed inset-0 z-50 lg:hidden",
+          open ? "pointer-events-auto" : "pointer-events-none"
+        )}
+        aria-hidden={!open}
+      >
+        <div
+          className={cn(
+            "absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-200",
+            open ? "opacity-100" : "opacity-0"
+          )}
+          onClick={() => setOpen(false)}
+        />
+        <div
+          className={cn(
+            "absolute inset-y-0 left-0 w-72 max-w-[85%] shadow-2xl transition-transform duration-300 ease-out",
+            open ? "translate-x-0" : "-translate-x-full"
+          )}
+        >
+          {sidebarContent}
+        </div>
+      </div>
     </>
   );
 }

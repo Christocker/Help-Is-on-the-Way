@@ -38,7 +38,7 @@ export default async function AuthLayout({
   const isAdmin = profile?.role === "admin";
 
   return (
-    <div className="min-h-screen">
+    <div className="flex min-h-screen flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
       <Sidebar
         user={{
           full_name: displayName,
@@ -47,8 +47,9 @@ export default async function AuthLayout({
         unreadNotifications={unreadCount ?? 0}
         isAdmin={isAdmin}
       />
-      <main className="lg:pl-64">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+
+      <main className="flex-1 overflow-y-auto bg-background">
+        <div className="container-page py-6 sm:py-8">
           {!isVerified && (
             <UnverifiedBanner
               email={user.email ?? ""}
