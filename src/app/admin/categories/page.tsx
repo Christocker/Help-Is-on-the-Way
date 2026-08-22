@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -17,8 +17,7 @@ import {
 } from "@/app/admin/actions";
 
 export default function AdminCategoriesPage() {
-  const supabaseRef = useRef(createClient());
-  const supabase = supabaseRef.current;
+  const supabase = useMemo(() => createClient(), []);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,9 +41,6 @@ export default function AdminCategoriesPage() {
   const [deletingCategory, setDeletingCategory] = useState<Category | null>(
     null
   );
-
-  const rowRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
-  const firstPositions = useRef<Map<string, number>>(new Map());
 
   const fetchCategories = useCallback(async () => {
     setLoading(true);
@@ -71,35 +67,6 @@ export default function AdminCategoriesPage() {
     fetchCategories();
   }, [fetchCategories]);
 
-  function measurePositions() {
-    const map = new Map<string, number>();
-    rowRefs.current.forEach((el, id) => {
-      if (el) map.set(id, el.getBoundingClientRect().top);
-    });
-    firstPositions.current = map;
-  }
-
-  function flip() {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        rowRefs.current.forEach((el, id) => {
-          if (!el) return;
-          const first = firstPositions.current.get(id);
-          if (first === undefined) return;
-          const current = el.getBoundingClientRect().top;
-          const delta = first - current;
-          if (delta === 0) return;
-          el.style.transition = "none";
-          el.style.transform = `translateY(${delta}px)`;
-          requestAnimationFrame(() => {
-            el.style.transition = "transform 300ms cubic-bezier(0.22, 1, 0.36, 1)";
-            el.style.transform = "";
-          });
-        });
-      });
-    });
-  }
-
   async function handleMoveCategory(
     category: Category,
     direction: "up" | "down"
@@ -113,15 +80,13 @@ export default function AdminCategoriesPage() {
     const target = categories[targetIndex];
     setMessage(null);
 
-    // Optimistically swap in the UI with a smooth animation.
-    measurePositions();
+    // Optimistically swap in the UI.
     setCategories((prev) => {
       const next = [...prev];
       next[index] = target;
       next[targetIndex] = category;
       return next;
     });
-    flip();
 
     // Persist by swapping the sort_order values.
     
@@ -334,11 +299,26 @@ export default function AdminCategoriesPage() {
       setShowAddForm(false);
       setAddPhoto(null);
       setAddForm({ name: "", slug: "", description: "" });
-      await fetchCategories();
+
+      // Refresh the list — wrap in its own try-catch so a re-render
+      // error cannot overwrite the success message above.
+      try {
+        await fetchCategories();
+      } catch (refreshErr) {
+        console.error("Failed to refresh categories after insert:", refreshErr);
+      }
     } catch (err) {
-      setMessage({
-        type: "error",
-        text: err instanceof Error ? err.message : "Failed to add category",
+      // Only set an error message if one hasn't already been set above
+      // (e.g. upload failure already set a specific message).
+      setMessage((prev) => {
+        if (prev?.type === "success") return prev;
+        const detail =
+          err && typeof err === "object" && "message" in err
+            ? String((err as { message: unknown }).message)
+            : typeof err === "string"
+              ? err
+              : "Failed to add category";
+        return { type: "error", text: detail };
       });
     } finally {
       setSaving(false);
@@ -495,9 +475,6 @@ export default function AdminCategoriesPage() {
             {categories.map((cat, index) => (
               <div
                 key={cat.id}
-                ref={(el) => {
-                  rowRefs.current.set(cat.id, el);
-                }}
                 className="px-6 py-4 hover:bg-surface transition-colors"
               >
                 {editingId === cat.id ? (

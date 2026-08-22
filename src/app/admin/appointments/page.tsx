@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { notifyAppointmentStatus, deleteAppointment, updateAppointment } from "@/app/admin/actions";
 import { Card } from "@/components/ui/Card";
@@ -40,8 +40,7 @@ const statusVariantMap: Record<
 };
 
 export default function AdminAppointmentsPage() {
-  const supabaseRef = useRef(createClient());
-  const supabase = supabaseRef.current;
+  const supabase = useMemo(() => createClient(), []);
   const [appointments, setAppointments] = useState<AppointmentWithDetails[]>(
     []
   );
