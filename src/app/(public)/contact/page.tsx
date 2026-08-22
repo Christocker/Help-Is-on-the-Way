@@ -96,8 +96,8 @@ export default function Contact() {
           <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-5">
             {/* Form */}
             <div className="lg:col-span-3 animate-fade-up">
-              <div className="rounded-2xl border border-border bg-card p-8 card-elevation">
-                <h2 className="text-2xl font-bold tracking-tight text-foreground">
+              <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 card-elevation">
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                   Send us a message
                 </h2>
                 <p className="mt-2 text-sm text-muted">

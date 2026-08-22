@@ -119,12 +119,12 @@ export default function HowItWorks() {
           <div className="relative mx-auto mt-16 max-w-5xl">
             {/* Central connecting line (desktop) */}
             <div
-              className="absolute left-1/2 top-0 hidden h-full w-0.5 -translate-x-1/2 bg-primary-100 lg:block"
+              className="absolute left-5 top-0 hidden h-full w-0.5 -translate-x-1/2 bg-primary-100 sm:left-1/2 lg:block"
               aria-hidden="true"
             />
             {/* Vertical connecting line (mobile) */}
             <div
-              className="absolute left-7 top-0 h-full w-0.5 bg-primary-100 lg:hidden"
+              className="absolute left-5 top-0 h-full w-0.5 bg-primary-100 sm:hidden"
               aria-hidden="true"
             />
 
@@ -137,13 +137,13 @@ export default function HowItWorks() {
                     className="relative lg:grid lg:grid-cols-2 lg:gap-20 lg:py-6"
                   >
                     {/* Numbered badge */}
-                    <div className="absolute left-7 top-0 z-10 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full bg-primary text-lg font-bold text-white shadow-md ring-4 ring-surface lg:left-1/2 lg:top-8">
+                    <div className="absolute left-5 top-0 z-10 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full bg-primary text-base font-bold text-white shadow-md ring-4 ring-surface sm:left-1/2 sm:h-14 sm:w-14 lg:left-1/2 lg:top-8">
                       {step}
                     </div>
 
                     {/* Card */}
                     <div
-                      className={`pl-20 lg:pl-0 ${
+                      className={`pl-16 sm:pl-20 lg:pl-0 ${
                         isLeft ? "lg:col-start-1" : "lg:col-start-2"
                       }`}
                     >
