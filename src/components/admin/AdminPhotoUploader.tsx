@@ -27,6 +27,8 @@ export function AdminPhotoUploader({
     type: "success" | "error";
     text: string;
   } | null>(null);
+  // Tracks the last upload/deletion timestamp to bust next/image's cache.
+  const [cacheBust, setCacheBust] = useState(0);
 
   const sizeClass = {
     sm: "h-24 w-32",
@@ -42,6 +44,7 @@ export function AdminPhotoUploader({
     const result = await onUpload(file);
     setUploading(false);
     if (result.ok) {
+      setCacheBust(Date.now());
       setMessage({ type: "success", text: "Photo updated." });
     } else {
       setMessage({
@@ -58,6 +61,7 @@ export function AdminPhotoUploader({
     const result = await onDelete();
     setDeleting(false);
     if (result.ok) {
+      setCacheBust(Date.now());
       setMessage({ type: "success", text: "Photo removed." });
     } else {
       setMessage({
@@ -77,7 +81,7 @@ export function AdminPhotoUploader({
       >
         {imageUrl ? (
           <Image
-            src={imageUrl}
+            src={`${imageUrl}${imageUrl.includes("?") ? "&" : "?"}t=${cacheBust}`}
             alt={alt}
             fill
             className="object-cover"

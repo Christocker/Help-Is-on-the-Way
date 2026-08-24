@@ -257,13 +257,22 @@ export default function AdminCategoriesPage() {
     }
 
     try {
-      const slug =
+      let slug =
         addForm.slug ||
         addForm.name
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/^-|-$/g, "");
-      
+
+      // If slug already exists (e.g. from a previously deleted category),
+      // append a numeric suffix until unique.
+      const existingSlugs = categories.map((c) => c.slug);
+      let suffix = 2;
+      while (existingSlugs.includes(slug)) {
+        slug = `${slug.replace(/-\d+$/, "")}-${suffix}`;
+        suffix++;
+      }
+
       const { data: inserted, error: insertError } = await supabase
         .from("categories")
         .insert({

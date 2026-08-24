@@ -208,11 +208,20 @@ export default function AdminEventsPage() {
     }
 
     try {
-      const slug = editForm.name
+      let slug = editForm.name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "");
-      
+
+      // If slug already exists (e.g. from a previously deleted event),
+      // append a numeric suffix until unique.
+      const existingSlugs = allEvents.map((e) => e.slug);
+      let suffix = 2;
+      while (existingSlugs.includes(slug)) {
+        slug = `${slug.replace(/-\d+$/, "")}-${suffix}`;
+        suffix++;
+      }
+
       const { error: updateError } = await supabase
         .from("events")
         .update({
@@ -244,10 +253,13 @@ export default function AdminEventsPage() {
       setEditingId(null);
       setMessage({ type: "success", text: "Event updated successfully" });
     } catch (err) {
-      setMessage({
-        type: "error",
-        text: err instanceof Error ? err.message : "Failed to update event",
-      });
+      const detail =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: unknown }).message)
+          : typeof err === "string"
+            ? err
+            : "Failed to update event";
+      setMessage({ type: "error", text: detail });
     } finally {
       setSaving(false);
     }
@@ -281,13 +293,21 @@ export default function AdminEventsPage() {
     }
 
     try {
-      const slug =
+      let slug =
         addForm.slug ||
         addForm.name
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/^-|-$/g, "");
-      
+
+      // If slug already exists, append a numeric suffix until unique.
+      const existingSlugs = allEvents.map((e) => e.slug);
+      let suffix = 2;
+      while (existingSlugs.includes(slug)) {
+        slug = `${slug.replace(/-\d+$/, "")}-${suffix}`;
+        suffix++;
+      }
+
       const { error: insertError } = await supabase.from("events").insert({
         category_id: addForm.category_id,
         name: addForm.name,
@@ -310,10 +330,13 @@ export default function AdminEventsPage() {
       setMessage({ type: "success", text: "Event added successfully" });
       await fetchData();
     } catch (err) {
-      setMessage({
-        type: "error",
-        text: err instanceof Error ? err.message : "Failed to add event",
-      });
+      const detail =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: unknown }).message)
+          : typeof err === "string"
+            ? err
+            : "Failed to add event";
+      setMessage({ type: "error", text: detail });
     } finally {
       setSaving(false);
     }
