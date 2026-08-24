@@ -7,6 +7,7 @@ import { ProgressIndicator } from "./_components/ProgressIndicator";
 import { StepCategory } from "./_components/StepCategory";
 import { StepEvent } from "./_components/StepEvent";
 import { StepReview } from "./_components/StepReview";
+import { ScrollHint } from "./_components/ScrollHint";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Loading";
 import { BookingData, Category, Event } from "@/lib/types";
@@ -283,6 +284,13 @@ export default function BookPage() {
           />
         )}
       </div>
+
+      <ScrollHint
+        visible={
+          (step === 1 && booking.category_id !== null) ||
+          (step === 2 && booking.event_id !== null)
+        }
+      />
 
       {submissionError && (
         <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4">
