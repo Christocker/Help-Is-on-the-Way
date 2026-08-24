@@ -26,11 +26,11 @@ export function ScrollHint({ visible, className }: ScrollHintProps) {
   return (
     <div
       className={cn(
-        "flex justify-center py-6 transition-opacity duration-300",
+        "fixed bottom-0 left-0 right-0 z-40 flex justify-center pb-safe sm:hidden",
         className
       )}
     >
-      <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary-50 px-4 py-2 text-sm font-medium text-primary shadow-sm animate-fade-up">
+      <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-white px-4 py-2.5 text-sm font-medium text-primary shadow-lg shadow-black/10 transition-all duration-500 animate-fade-up">
         <span className="animate-bounce">
           <svg
             className="h-4 w-4"
